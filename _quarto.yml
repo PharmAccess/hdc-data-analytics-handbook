@@ -1,0 +1,41 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Data Analytics Handbook"
+  repo-url: https://github.com/PharmAccess/hdc-data-analytics-handbook
+  repo-actions: [edit, issue]
+  repo-branch: main
+  search: true
+  page-navigation: true
+  page-footer:
+    background: light
+    left: "© PharmAccess Foundation, 2023."
+  sidebar:
+    logo: "logo-pharmaccess.png"
+    tools:
+      - icon: globe
+        href: https://pharmaccess.org
+        text: "https://pharmaccess.org"
+      - icon: linkedin
+        href: https://www.linkedin.com/company/pharm-access-foundation/
+        text: "LinkedIn company page"
+    collapse-level: 1
+    pinned: true
+    contents:
+      - href: index.qmd
+        text: Home
+      - about.qmd
+
+format:
+  html:
+    theme: flatly
+
+toc: true
+number-sections: true
+number-depth: 2
+crossref: 
+  fig-prefix: figure
+  tbl-prefix: table
+
