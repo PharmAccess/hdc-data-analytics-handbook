@@ -1,1 +1,1 @@
-Sitemap: https://PharmAccess.github.io/hdc-data-analytics-handbook/sitemap.xml
+Sitemap: https://github.com/PharmAccess/hdc-data-analytics-handbook/sitemap.xml
