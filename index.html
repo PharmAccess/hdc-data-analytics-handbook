@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Data Analytics Handbook - .</title>
+<title>Data Analytics Handbook - A health data commons based on the modern data stack</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,7 +20,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -119,14 +138,21 @@ ul.task-list li input[type="checkbox"] {
 <div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-need-for-a-health-data-commons" id="toc-the-need-for-a-health-data-commons" class="nav-link active" data-scroll-target="#the-need-for-a-health-data-commons">The need for a health data commons</a></li>
+  <li><a href="#the-openhie-framework" id="toc-the-openhie-framework" class="nav-link" data-scroll-target="#the-openhie-framework">the OpenHIE framework</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/PharmAccess/hdc-data-analytics-handbook/edit/main/index.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/PharmAccess/hdc-data-analytics-handbook/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">.</h1>
+<h1 class="title">A health data commons based on the modern data stack</h1>
 </div>
 
 
@@ -141,12 +167,56 @@ ul.task-list li input[type="checkbox"] {
 
 </header>
 
-<p>This is a Quarto website.</p>
-<p>To learn more about Quarto websites visit <a href="https://quarto.org/docs/websites" class="uri">https://quarto.org/docs/websites</a>.</p>
+<section id="the-need-for-a-health-data-commons" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="the-need-for-a-health-data-commons">The need for a health data commons</h2>
+<p>Many organizations and jurisdictions struggle with the digital transformation of healthcare. In a recent analysis of the Dutch health information system, for example, the OECD concluded that several fundamental barriers need to be overcome, most notably the fragmentation of the health system. Paradoxically, fragmentation is a design feature intended to enable competition and market mechanisms to work, but at the same time presents an institutional barrier to data sharing and exchange. Fragmentation has particularly affected electronic medical data, where despite efforts toward data exchange, the data remain underdeveloped, siloed and underused. Lack of alignment and a common interpretation of legislation and regulations also present a challenge to advancing secure health data sharing, accessibility and use.</p>
+<p>These challenges are not unique to the Dutch system, but are prevalent in many jurisdictions and regions. Initiatives such as the Lancet and Financial Times commission on governing health futures have laid out a development path to address these challenges. The concept of health data commons (HDC) is a key element in this approach where such commons are required</p>
+<ul>
+<li>to be build within a governance architecture that creates trust in digital health by enfranchising patients and vulnerable groups, ensuring health and digital rights, and regulating powerful players in the digital health ecosystem;</li>
+<li>to support a new approach to the collection and use of health data based on the concept of data solidarity, with the aim of simultaneously protecting individual rights, promoting the public good potential of such data, and building a culture of data justice and equity;</li>
+<li>to be designed in such a way to be conducive to strong ownership of digital health strategies and clear investment roadmaps that help prioritize those technologies that are most needed at different levels of digital health maturity.</li>
+</ul>
+<p>Despite the challenges, we want to demonstrate that patient-centric data access and reuse is feasible, today. We take the approach of <em>“show, don’t tell”</em>. Through implementing demonstrator projects that contribute towards the creation of a <strong>Health Data Commons (HDC)</strong>, we show that health data sharing can be achieved in LMICs at acceptable cost and low technical risk. This document describes the learnings from the HDC project. Through these demonstrators we aim to initiate a paradigm shift as to how data sharing can be realized such that it can act as a catalyst towards achieving UHC.</p>
+<p>In this handbook, we provide a detailed technical description of a solution design for a HDC based on the OpenHIE framework. This handbook aims to address professionals in the area of health informatics, data analytics and data architecure.</p>
+</section>
+<section id="the-openhie-framework" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="the-openhie-framework">the OpenHIE framework</h2>
+<div id="fig-openhie" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="images/openhie.png" class="img-fluid figure-img"></p>
+<figcaption class="figure-caption">Figure&nbsp;1: OpenHIE framework</figcaption>
+</figure>
+</div>
+<p>The HDC project takes the openHIE framework<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> as a starting point, being the most generic and commonly used health information interoperability framework. This framework has by and large been adopted by sub-Saharan African countries<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>, including Nigeria<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>, Kenya<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> and Tanzania.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<p>The HDC framework and its components are shown in <a href="#fig-openhie">figure&nbsp;1</a>. The bottom layer (yellow) comprises the point of service (PoS) systems, which includes the systems used by clinicians, health professionals, community health workers and the like. Examples of such systems are OpenMRS electronic medical records (EMR) system and the RapidSMS mHealth application, which are used to access and update a patient’s records, register activities and record healthcare transactions.</p>
+<p>The second, middle layer (teal) constitutes the interoperablity layer (IOL), which acts as a gateway for exchanging information between systems. Any type of information exchange, be it between two PoS systems, or between a PoS system and business services (explained below), is mediated through this interoperability layer. The interoperability layer provides functionality such as routing, translation services, auditing and authentication.</p>
+<p>The top layer of framework comprises three distinct domains. Common Services (blue) include a variety of registry services that are designed to uniquely identify and track unique patients, facilities, healthcare products, and terminology that are used throughout the health data commons. Business Service (green) are designed to support the delivery of care within the health system. The District Health Information System version 2, for example, is a well-known and widely used Health Management Information System for collecting, analyzing, visualizing and sharing data through combinining data from multiple PoS systems for a given geography or jurisdiction.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+<p>The HDC framework explicitly adds a third domain in the top layer, which is not included in the OpenHIE specification, namely Analytics &amp; Intelligence Services (light blue). The rationale for this addition is to facilitate secondary use of health data for academic research, real-world evidence studies etc. within the nascent concept of health data spaces.<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> Note that the Kenyan Health Information Systems Interoperability Framework (KHISIF) has also explicitly included the analytics domain.</p>
 
 
 
-</main> <!-- /main -->
+</section>
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-mamuye2022health" class="csl-entry" role="listitem">
+Mamuye, Adane L., Tesfahun M. Yilma, Ahmad Abdulwahab, Sean Broomhead, Phumzule Zondo, Mercy Kyeng, Justin Maeda, Mohammed Abdulaziz, Tadesse Wuhib, and Binyam C. Tilahun. 2022. <span>“Health Information Exchange Policy and Standards for Digital Health Systems in Africa: <span>A</span> Systematic Review.”</span> <em>PLOS Digital Health</em> 1 (10): e0000118.
+</div>
+<div id="ref-tzhea2020" class="csl-entry" role="listitem">
+<span>“Tanzania <span>Health Enterprise Architecture</span>.”</span> 2020.
+</div>
+</div></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p><a href="https://ohie.org">ohie.org</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><span class="citation" data-cites="mamuye2022health">Mamuye et al. (<a href="#ref-mamuye2022health" role="doc-biblioref">2022</a>)</span><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a href="https://ohie.org/impact-stories/nigeria-data-exchange-architecture-for-the-national-data-repository/">Nigeria data exchange architecture for the national data repository</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><a href="https://www.data4sdgs.org/sites/default/files/services_files/Kenya%20Health%20Information%20Systems%20Interoperability%20Framework.pdf">KHISIF</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p><span class="citation" data-cites="tzhea2020"><span>“Tanzania <span>Health Enterprise Architecture</span>”</span> (<a href="#ref-tzhea2020" role="doc-biblioref">2020</a>)</span><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p><a href="https://dhis2.org/">DHIS2</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>see for example the <a href="https://internationaldataspaces.org/">International Data Spaces Association</a><a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -395,7 +465,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     <div class="nav-footer-left">© PharmAccess Foundation, 2023.</div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/PharmAccess/hdc-data-analytics-handbook/edit/main/index.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/PharmAccess/hdc-data-analytics-handbook/issues/new" class="toc-action">Report an issue</a></p></div></div></div>
+    </div>
     <div class="nav-footer-right">
       &nbsp;
     </div>
