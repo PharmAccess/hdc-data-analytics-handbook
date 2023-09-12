@@ -1,0 +1,101 @@
+# Data wrangling using Ibis
+
+```{python}
+import duckdb
+import ibis
+import pandas as pd
+import pyarrow
+```
+
+## Connect to database
+
+```{python}
+SILVER = "data/SILVER"
+con = ibis.duckdb.connect(f"{SILVER}/pregnancy.duckdb")
+```
+
+## Retrieve data
+
+```{python}
+df = con.table("patient_timeline")
+df
+```
+
+## Group by, summarise
+
+Count the number of patients per organization.
+
+```{python}
+df_grouped = df.group_by("organization_name").aggregate(df.patient_id.nunique()).to_pandas()
+df_grouped
+```
+
+### Show query
+
+Print underlying duckdb query.
+
+```{python}
+df_grouped = df.group_by("organization_name").aggregate(df.patient_id.nunique())
+ibis.show_sql(df_grouped)
+```
+
+## Filter
+
+Filter patients by procedure.
+
+```{python}
+df_filtered = df.filter(df.procedure_name == "Well child visit (procedure)").to_pandas()
+df_filtered
+```
+
+```{python}
+df.head().to_pandas()
+```
+
+## Mutate
+
+Extract year from start time.
+
+```{python}
+df_new_var = df.mutate(start_year=df.start_time.cast("timestamp").year()).to_pandas()
+df_new_var
+```
+
+## Order
+
+Order by start time.
+
+```{python}
+df_ordered = df.order_by(df.start_time.cast("timestamp")).to_pandas()
+df_ordered
+```
+
+## Rename
+
+Rename birth date column.
+
+```{python}
+df_renamed = df.relabel({"birthDate": "birth_date"}).to_pandas()
+df_renamed
+```
+
+## Join
+
+First get price list data to join on.
+
+```{python}
+df_price_list = con.table("price_list")
+df_price_list
+```
+
+And then join on code and system.
+
+```{python}
+df_joined = df.left_join(
+    df_price_list, [
+        df.vaccine_code == df_price_list.code,
+        df.vaccine_code_system == df_price_list.system
+    ]
+).to_pandas()
+df_joined
+```
