@@ -1,0 +1,105 @@
+---
+title: "data-wrangling-dplyr.qmd"
+editor: visual
+---
+
+```{r}
+library(DBI)
+library(dplyr)
+library(duckdb)
+library(glue)
+library(lubridate)
+```
+
+## Connect to database
+
+```{r}
+SILVER = "data/SILVER"
+con <- dbConnect(
+  duckdb::duckdb(),
+  dbdir = glue("{SILVER}/pregnancy.duckdb"),
+  read_only = TRUE
+)
+```
+
+## Retrieve data
+
+```{r}
+df <- dbGetQuery(con, "SELECT * FROM patient_timeline")
+df
+```
+
+## Group by, summarise
+
+Count the number of patients per organization.
+
+```{r}
+df_grouped <- df %>% 
+  group_by(organization_name) %>%
+  summarise(
+    number_of_patients = n_distinct(patient_id),
+    .groups = "drop"
+  )
+df_grouped
+```
+
+## Filter
+
+Filter patients by procedure.
+
+```{r}
+df_filtered <- df %>%
+  filter(procedure_name == "Well child visit (procedure)")
+df_filtered
+```
+
+## Mutate
+
+Extract year from start time.
+
+```{r}
+df_new_var <- df %>%
+  mutate(start_year = year(as.Date(start_time, format = "%Y-%m-%d")))
+df_new_var
+```
+
+## Order
+
+Order by start time.
+
+```{r}
+df_ordered <- df %>%
+  mutate(start_time = as.Date(start_time), format = "%Y-%m-%d") %>%
+  arrange(start_time)
+df_ordered
+```
+
+## Rename
+
+Rename birth date column.
+
+```{r}
+df_renamed <- df %>%
+  rename(birth_date = birthDate)
+df_renamed
+```
+
+## Join
+
+First get price list data to join on.
+
+```{r}
+df_price_list <- dbGetQuery(con, "SELECT * FROM price_list")
+df_price_list
+```
+
+And then join on code and system.
+
+```{r}
+df_joined <- df %>%
+  left_join(
+    df_price_list,
+    by = c("vaccine_code" = "code", "vaccine_code_system" = "system")
+  )
+df_joined
+```

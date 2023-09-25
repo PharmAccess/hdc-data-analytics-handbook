@@ -1,4 +1,7 @@
-# Data wrangling using Polars
+---
+title: "Data wrangling using Polars"
+editor: visual
+---
 
 ```{python}
 import duckdb

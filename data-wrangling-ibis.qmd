@@ -1,4 +1,7 @@
-# Data wrangling using Ibis
+---
+title: "Data wrangling using Ibis"
+editor: visual
+---
 
 ```{python}
 import duckdb
