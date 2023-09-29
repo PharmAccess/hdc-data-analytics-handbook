@@ -28,6 +28,7 @@ website:
         text: Home
       - about.qmd
       - synthea.qmd
+      - pandas.qmd
 
 format:
   html:
