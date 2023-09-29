@@ -28,6 +28,8 @@ website:
         text: Home
       - about.qmd
       - synthea.qmd
+      - duckdb.qmd
+      - pandas.qmd
 
 format:
   html:
