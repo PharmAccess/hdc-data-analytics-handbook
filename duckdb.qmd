@@ -1,0 +1,249 @@
+# Create views using DuckDB
+The synthea generator generates fhir data in json format. The fhir data has a nested structure which can be challenging for analysis. For that reason we create a flattened view based on the different fhir resources, that can be used for further analysis. In this handbook we create a patient_timeline, including all procedures that a woman had in her pregnancy journey.
+
+## What is duckDB?  {.unnumbered}
+DuckDB is an open-source database known for its fast query processing. It supports SQl and nested datastructures like Fhir.
+
+## Installing and importing data in duckDB  {.unnumbered}
+First install [DuckDB](https://duckdb.org/docs/installation/index).  
+Then import the library:
+
+```{python}
+import duckdb
+```
+
+Now we can import the fhir data in duckdb as follows:
+
+To use DuckDB, we first need to create a connection to a database. To do so we need to give a parameter that refers to a database (duckdb) file. If the file already exists,, duckdb connects to that file, if not a new file will be generated and connected to. The file extension can be anything, but usually .db or .duckdb are used. 
+
+**side note:** when working with schemas a duckdb file can become large rapidly. For that reason in this notebook two duckdb files were created: one in which all raw data and manipulations are stored and has multiple schemas and one in which only the outcome is stored, which will be much smaller in size.
+
+### Creating and connecting to duckdb databases
+
+```{python}
+
+# we setup a data storage schema following the Medallion structure
+# https://www.databricks.com/glossary/medallion-architecture#:~:text=A%20medallion%20architecture%20is%20a,Silver%20%E2%87%92%20Gold%20layer%20tables).
+
+# define where data is stored
+BRONZE = 'data/BRONZE'
+SILVER = 'data/SILVER'
+SYNTHEA_DUMP = 'data/BRONZE/synthea/fhir'
+
+connection_bronze = duckdb.connect(f"{BRONZE}/raw.duckdb")
+connection_silver = duckdb.connect(f"{SILVER}/pregnancy.duckdb")
+```
+
+we are now connected to our duckdb databases, and can run any SQL commands on them.
+
+### SET up duckdb database and import fhir data {.unnumbered}
+
+First, we can create a schema structure in the database, in this example we use a [medallion database structure](https://www.databricks.com/glossary/medallion-architecture#:~:text=A%20medallion%20architecture%20is%20a,Silver%20%E2%87%92%20Gold%20layer%20tables) where the raw fhir data is stored in the BRONZE layer.
+
+```{python}
+schema_list = ['BRONZE','SILVER','GOLD']
+for schema in schema_list: 
+    connection_bronze.sql(f'create schema if not exists {schema}')
+```
+
+Now, we import the fhir data from the ndjson fhir resources into the duckdb database. DuckDB allows you to directly read the data from the ndjson files.
+
+```{python}
+schema = 'BRONZE'
+# loop through the different resources, note that the numbers behind organization, practitioner, location, etc. will be different for each set of generated Synthea data.
+resource_list = ['DiagnosticReport','Claim','Provenance','ExplanationOfBenefit','DocumentReference','Encounter','Patient','Organization.1693914717904','Location.1693914717904','Immunization','Practitioner.1693914717904','PractitionerRole.1693914717904']
+
+for resource in resource_list:
+    resource_table_name = resource.split('.')[0] # get rid of number behind resource name
+    connection_bronze.sql(f"create table if not exists {schema}.{resource_table_name} as select * from '{SYNTHEA_DUMP}/{resource}.ndjson'")
+```
+
+To check if all resources are present we can check the information_schema:
+
+```{python}
+#check if all resources are present
+connection_bronze.sql(f"select * from information_schema.tables").to_df()
+```
+
+
+### Investigating Nested structures {.unnumbered}
+
+Fhir data has a nested structure. This can be observed by looking at the Claim data as an example:
+
+```{python}
+connection_bronze.sql('select * from BRONZE.Claim limit 1').to_df()
+```
+
+Let's obsere the data in item
+
+```{python}
+connection_bronze.sql('select * from BRONZE.Claim limit 1').to_df()['item'][0]
+```
+
+It can be observed that an item is a list of procedures/products with a price. Within one list item under the productOrService, we can find another list in which the coding is specified. 
+
+To deal with this nested structure, the unnest() and struct_extract() functions are frequently used. 
+
+Let's try to create a list of the claims where each productOrService of a claim is on a new line. To do so, a cross join can be used to merge the results with the original table.
+
+```{python}
+query = '''
+Select 
+c.patient.reference, 
+struct_extract(i,'productOrService') as productOrService
+from Bronze.Claim c
+cross join (SELECT UNNEST(item)i)
+'''
+connection_bronze.sql(query).to_df()
+
+```
+
+
+### Create flattened tables to use for data wrangling {.unnumbered}
+First, let's create a pricelist from the claims data
+
+```{python}
+query = '''
+create table if not exists SILVER.price_list as(
+        Select 
+        distinct
+        struct_extract(codes,'code') as code,
+        case
+            when struct_extract(codes,'system') like '%snomed%' then 'SNOMED'
+            when struct_extract(codes,'system') like '%cvx%' then 'CVX'
+            else NULL 
+        end as system,
+        struct_extract(codes,'display') as item_claimed,
+        struct_extract(struct_extract(i,'net'),'value') as USD
+
+
+        from 
+        BRONZE.Claim c
+        cross join (SELECT unnest(item) i)
+        cross join (SELECT unnest(struct_extract(struct_extract(i,'productOrService'),'coding')) codes)
+    );
+
+Select * from SILVER.price_list limit 5
+'''
+connection_bronze.sql(query).to_df()
+
+```
+
+We also want to create a table that contains all encounters of the patient, information about the patient, and all vaccinations the patient required in one table.
+
+```{python}
+query ='''
+create table if not exists SILVER.patient_timeline as(
+    with patient_info as(
+        Select 
+            p.id as patient_id,
+            struct_extract(i,'value') as social_security_number,
+            struct_extract(n,'prefix') as prefix,
+            struct_extract(n,'given') as first_name,
+            struct_extract(n,'family') as last_name,
+            p.birthDate
+        from BRONZE.Patient p
+        cross join (SELECT unnest(p.identifier) i)
+        cross join (SELECT unnest(p.name) n)
+        where struct_extract(n,'use') = 'official'
+        and struct_extract(i,'system') = 'http://hl7.org/fhir/sid/us-ssn'
+    ),
+    encounter_info as(
+        Select 
+            e.id as encounter_id,
+            struct_extract(c,'code') as code,
+            'SNOMED' as system,
+            struct_extract(c,'display') as procedure_name,
+            str_split(e.subject.reference,'/')[2] as patient_id,
+            str_split(e.serviceProvider.reference,'synthea|')[-1] as organization_id,
+            e.serviceProvider.display as organization_name,
+            struct_extract(struct_extract(p,'individual'),'display') as practitioner_name,
+            str_split(struct_extract(struct_extract(p,'individual'),'reference'),'us-npi|')[-1] as practitioner_id,
+            e.period.start as start_time,
+            e.period.end as end_time    
+        from BRONZE.encounter e
+        cross join (SELECT unnest(e.type) t)
+        cross join (SELECT unnest(t.coding) c)
+        cross join (SELECT unnest(e.participant) p)
+        where struct_extract(c,'system') = 'http://snomed.info/sct'
+    ),
+    immunization_info as(
+        Select 
+            i.id as immunization_id,
+            i.vaccineCode.text as Vaccine_name,
+            struct_extract(vc,'code') as code,
+            'CVX' as system,
+            str_split(i.patient.reference,'/')[2] as patient_id,
+            str_split(i.encounter.reference,'/')[2] as encounter_id
+        from 
+        BRONZE.Immunization i
+        cross join (SELECT unnest(vaccineCode.coding) vc)
+        where struct_extract(vc,'system') = 'http://hl7.org/fhir/sid/cvx'
+    ),
+    price_list as (
+        Select 
+            distinct
+            struct_extract(codes,'code') as code,
+            case
+                when struct_extract(codes,'system') like '%snomed%' then 'SNOMED'
+                when struct_extract(codes,'system') like '%cvx%' then 'CVX'
+                else NULL 
+            end as system,
+            struct_extract(codes,'display') as item_claimed,
+            struct_extract(struct_extract(i,'net'),'value') as USD
+        from 
+        BRONZE.Claim c
+        cross join (SELECT unnest(item) i)
+        cross join (SELECT unnest(struct_extract(struct_extract(i,'productOrService'),'coding')) codes)
+    )
+    Select 
+    p.*,
+    e.code,
+    e.system,
+    e.organization_id,
+    e.organization_name,
+    e.practitioner_name,
+    e.practitioner_id,
+    e.procedure_name,
+    e.start_time,
+    e.end_time,
+    i.vaccine_name,
+    i.code as vaccine_code,
+    i.system as vaccine_code_system
+    from patient_info p
+    join encounter_info e on p.patient_id = e.patient_id
+    left join immunization_info i on i.encounter_id = e.encounter_id and e.patient_id = p.patient_id
+);
+
+select * from SILVER.patient_timeline limit 5
+    
+'''
+connection_bronze.sql(query).to_df()
+```
+
+
+### Export the outcome in a separate duckdb file {.unnumbered}
+As the database now becomes big in size, we extract the patient_timeline and pricelist into another duckdb.
+
+```{python}
+# first extract tables into a dataframe
+price_list = connection_bronze.sql('Select * from SILVER.price_list').to_df()
+timeline = connection_bronze.sql('Select * from SILVER.patient_timeline').to_df()
+
+
+# load from dataframe into SILVER database
+connection_silver.sql('create or replace table price_list as select * from price_list')
+
+connection_silver.sql('create or replace table patient_timeline as select * from patient_timeline')
+
+connection_silver.sql('Select * from patient_timeline limit 5').to_df()
+```
+
+
+### Close the database connection
+When you finish your analysis always make sure to close the duckdb connection. You can only have one duckdb connection at a time.
+
+```{python}
+connection_silver.close()
+connection_bronze.close()
+```
