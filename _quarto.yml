@@ -27,12 +27,14 @@ website:
       - href: index.qmd
         text: Home
       - about.qmd
+      - synthea.qmd
       - duckdb.qmd
       - pandas.qmd
 
 format:
   html:
     theme: flatly
+    code-copy: true
 
 bibliography: pharmaccess.bib
 toc: true
