@@ -28,6 +28,7 @@ website:
         text: Home
       - about.qmd
       - duckdb.qmd
+      - pandas.qmd
 
 format:
   html:
