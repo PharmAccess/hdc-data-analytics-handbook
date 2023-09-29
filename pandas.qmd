@@ -1,0 +1,151 @@
+# Datawrangling using Pandas 2.0
+
+## Pandas 2.0
+Pandas is a popular data wrangling library in the data science comunity. Pandas 2.0 mainly introduces improvements in performance, making it faster and more memory-efficient. 
+
+## Example using the Synthea dataset
+### load required libraries
+```{python}
+import pandas as pd
+import duckdb 
+```
+
+### connect to database and retrieve data
+```{python}
+#connect to database
+SILVER = "data/SILVER"
+con = duckdb.connect(f"{SILVER}/pregnancy.duckdb")
+
+#get data
+df = con.sql('select * from patient_timeline').to_df()
+df_price_list = con.sql('select * from price_list').to_df()
+
+# close the connection
+con.close()
+```
+
+### Group by, summarise
+
+Count the number of patients per organization
+
+* group by organization
+* aggregate: unique patient_id count
+* rename the patient_id aggregate to # patients
+* rename the index title
+
+```{python}
+
+df_grouped = df.groupby("organization_name").agg(
+        {'patient_id':pd.Series.nunique}
+    ).rename(
+        columns = {'patient_id':'# patients'}
+    ).rename_axis('organization') 
+
+# show first 5 records 
+df_grouped.head()
+```
+
+### Filter
+
+Filter patients by procedure
+
+
+```{python}
+# option 1
+value = 'Well child visit (procedure)'
+df_filtered = df[df['procedure_name'] == value]
+
+```
+
+
+```{python}
+# option 2
+df_filtered = df.loc[df['procedure_name'] == value]
+```
+
+
+```{python}
+# option 3
+df_filtered = df.query(f"procedure_name == '{value}' ")
+```
+
+```{python}
+#show results
+df_filtered[['patient_id','start_time','procedure_name']].head()
+```
+
+Next to filtering the dataframe on content, it is also possible to filter which columns or rows to show.  
+
+Only show the columns patient_id, birthDate, organization_name
+
+```{python}
+df_filtered.filter(items = ['patient_id','birthDate','organization_name']).head(1)
+```
+
+```{python}
+df_filtered[['patient_id','birthDate','organization_name']].head(1)
+```
+
+### Mutate
+
+Extract year from the start time
+
+```{python}
+# transform start_time to datetime (its currently string format)
+df['start_time'] = pd.to_datetime(df['start_time'], utc=  True)
+df['start_time'].dtype
+```
+
+```{python}
+#option 1
+df['year'] = df['start_time'].dt.year
+
+#option 2
+df = df.assign(year=df['start_time'].dt.year )
+
+df[['start_time','year']].head(1)
+```
+
+### Order
+
+Order by start time newest first
+
+```{python}
+df_ordered = df.sort_values(by = 'start_time', ascending = False)
+df_ordered[['patient_id','start_time','procedure_name']].head()
+```
+
+### Rename
+
+Rename birthDate column to birth_date
+
+In pandas,  many actions such as *rename* can be adapted directly in the same dataframe by adding the option inplace = True. 
+
+Alternatively, one can create a new dataframe and keep the name the same in the original dataframe.
+
+```{python}
+#option 1 - change in dataframe
+df.rename(columns = {'birthDate':'birth_date'}, inplace = True)
+
+#option 2 - change only in new dataframe
+df_renamed = df.rename(columns = {'birthDate':'birth_date'})
+
+```
+
+
+
+### Join 
+
+Join the patient timeline with the pricelist table on code and system
+
+```{python}
+df_joined = pd.merge(
+    df,
+    df_price_list, 
+    left_on = ['vaccine_code','vaccine_code_system'], 
+    right_on = ['code','system'], 
+    how ='left'
+)
+
+df_joined.filter(items = ['patient_id','start_time','year','vaccine_name','item_claimed','USD']).head()
+```
