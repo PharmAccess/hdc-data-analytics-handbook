@@ -1,6 +1,6 @@
 /.quarto/
 /docs/
 .DS_Store
-/data/
 *.duckdb
 /docs/
+/data/bronze/parquet/*
