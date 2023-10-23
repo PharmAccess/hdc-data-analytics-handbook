@@ -10,6 +10,8 @@ Then import the library:
 
 ```{python}
 import duckdb
+import quarto
+from pathlib import Path
 ```
 
 Now we can import the fhir data in duckdb as follows:
@@ -26,9 +28,14 @@ To use DuckDB, we first need to create a connection to a database. To do so we n
 # https://www.databricks.com/glossary/medallion-architecture#:~:text=A%20medallion%20architecture%20is%20a,Silver%20%E2%87%92%20Gold%20layer%20tables).
 
 # define where data is stored
-BRONZE = 'data/BRONZE'
-SILVER = 'data/SILVER'
-SYNTHEA_DUMP = 'data/BRONZE/synthea/fhir'
+
+# ROOT = Path(__file__).resolve().parent
+# ROOT = quarto.project.root
+ROOT = Path('.')
+BRONZE = ROOT / 'data' / 'bronze'
+SILVER = ROOT / 'data' / 'silver'
+SYNTHEA_DUMP = 'data/bronze/synthea/fhir'
+
 
 connection_bronze = duckdb.connect(f"{BRONZE}/raw.duckdb")
 connection_silver = duckdb.connect(f"{SILVER}/pregnancy.duckdb")
@@ -41,7 +48,7 @@ we are now connected to our duckdb databases, and can run any SQL commands on th
 First, we can create a schema structure in the database, in this example we use a [medallion database structure](https://www.databricks.com/glossary/medallion-architecture#:~:text=A%20medallion%20architecture%20is%20a,Silver%20%E2%87%92%20Gold%20layer%20tables) where the raw fhir data is stored in the BRONZE layer.
 
 ```{python}
-schema_list = ['BRONZE','SILVER','GOLD']
+schema_list = ['bronze','silver','gold']
 for schema in schema_list: 
     connection_bronze.sql(f'create schema if not exists {schema}')
 ```
@@ -49,7 +56,7 @@ for schema in schema_list:
 Now, we import the fhir data from the ndjson fhir resources into the duckdb database. DuckDB allows you to directly read the data from the ndjson files.
 
 ```{python}
-schema = 'BRONZE'
+schema = 'bronze'
 # loop through the different resources, note that the numbers behind organization, practitioner, location, etc. will be different for each set of generated Synthea data.
 resource_list = ['DiagnosticReport','Claim','Provenance','ExplanationOfBenefit','DocumentReference','Encounter','Patient','Organization.1693914717904','Location.1693914717904','Immunization','Practitioner.1693914717904','PractitionerRole.1693914717904']
 
@@ -65,19 +72,38 @@ To check if all resources are present we can check the information_schema:
 connection_bronze.sql(f"select * from information_schema.tables").to_df()
 ```
 
+### Export data to parquest files
+Since parquet files require less space then duckdb files. For many applications it is convenient to export the data in parquet format. 
+
+One can convert each table separately to a parquet file, which is shown below. 
+
+```{python}
+resource_list = ['DiagnosticReport','Claim','Provenance','ExplanationOfBenefit','DocumentReference','Encounter','Patient','Organization','Location','Immunization','Practitioner','PractitionerRole']
+#check if all resources are present
+for resource in resource_list: 
+    connection_bronze.sql(f"COPY bronze.{resource} TO '{BRONZE}/parquet/{resource}.parquet' (FORMAT PARQUET)")
+```
+
+It is also possible to do a database export in parquet format. a load.sql and schema.sql file are then also available, to make it easy to import the data at once in duckdb. 
+
+```{python}
+connection_bronze.sql(f"EXPORT DATABASE '{BRONZE}/parquet_export' (FORMAT PARQUET);")
+```
+
+It can be observed that the size of the parquet files (16.5 MB) is smaller than the size of the duckdb file (18.5 MB). Both duckdb and parquet file formats are significantly smaller in size than the ndjson files, which take up 146.5 MB in total.
 
 ### Investigating Nested structures {.unnumbered}
 
 Fhir data has a nested structure. This can be observed by looking at the Claim data as an example:
 
 ```{python}
-connection_bronze.sql('select * from BRONZE.Claim limit 1').to_df()
+connection_bronze.sql('select * from bronze.Claim limit 1').to_df()
 ```
 
 Let's obsere the data in item
 
 ```{python}
-connection_bronze.sql('select * from BRONZE.Claim limit 1').to_df()['item'][0]
+connection_bronze.sql('select * from bronze.Claim limit 1').to_df()['item'][0]
 ```
 
 It can be observed that an item is a list of procedures/products with a price. Within one list item under the productOrService, we can find another list in which the coding is specified. 
@@ -91,7 +117,7 @@ query = '''
 Select 
 c.patient.reference, 
 struct_extract(i,'productOrService') as productOrService
-from Bronze.Claim c
+from bronze.Claim c
 cross join (SELECT UNNEST(item)i)
 '''
 connection_bronze.sql(query).to_df()
@@ -104,7 +130,7 @@ First, let's create a pricelist from the claims data
 
 ```{python}
 query = '''
-create table if not exists SILVER.price_list as(
+create table if not exists silver.price_list as(
         Select 
         distinct
         struct_extract(codes,'code') as code,
@@ -118,12 +144,12 @@ create table if not exists SILVER.price_list as(
 
 
         from 
-        BRONZE.Claim c
+        bronze.Claim c
         cross join (SELECT unnest(item) i)
         cross join (SELECT unnest(struct_extract(struct_extract(i,'productOrService'),'coding')) codes)
     );
 
-Select * from SILVER.price_list limit 5
+Select * from silver.price_list limit 5
 '''
 connection_bronze.sql(query).to_df()
 
@@ -133,16 +159,16 @@ We also want to create a table that contains all encounters of the patient, info
 
 ```{python}
 query ='''
-create table if not exists SILVER.patient_timeline as(
+create or replace table silver.patient_timeline as(
     with patient_info as(
         Select 
-            p.id as patient_id,
+            cast(p.id as string) as patient_id, -- both pandas and byspark dont allow the UUID type (FIXED_BYTE_LEN_ARRAY in parquet)therefore the UUID is converted into string
             struct_extract(i,'value') as social_security_number,
-            struct_extract(n,'prefix') as prefix,
-            struct_extract(n,'given') as first_name,
+            struct_extract(n,'prefix')[1] as prefix,
+            struct_extract(n,'given')[1] as first_name,
             struct_extract(n,'family') as last_name,
             p.birthDate
-        from BRONZE.Patient p
+        from bronze.Patient p
         cross join (SELECT unnest(p.identifier) i)
         cross join (SELECT unnest(p.name) n)
         where struct_extract(n,'use') = 'official'
@@ -161,7 +187,7 @@ create table if not exists SILVER.patient_timeline as(
             str_split(struct_extract(struct_extract(p,'individual'),'reference'),'us-npi|')[-1] as practitioner_id,
             e.period.start as start_time,
             e.period.end as end_time    
-        from BRONZE.encounter e
+        from bronze.encounter e
         cross join (SELECT unnest(e.type) t)
         cross join (SELECT unnest(t.coding) c)
         cross join (SELECT unnest(e.participant) p)
@@ -176,7 +202,7 @@ create table if not exists SILVER.patient_timeline as(
             str_split(i.patient.reference,'/')[2] as patient_id,
             str_split(i.encounter.reference,'/')[2] as encounter_id
         from 
-        BRONZE.Immunization i
+        bronze.Immunization i
         cross join (SELECT unnest(vaccineCode.coding) vc)
         where struct_extract(vc,'system') = 'http://hl7.org/fhir/sid/cvx'
     ),
@@ -192,7 +218,7 @@ create table if not exists SILVER.patient_timeline as(
             struct_extract(codes,'display') as item_claimed,
             struct_extract(struct_extract(i,'net'),'value') as USD
         from 
-        BRONZE.Claim c
+        bronze.Claim c
         cross join (SELECT unnest(item) i)
         cross join (SELECT unnest(struct_extract(struct_extract(i,'productOrService'),'coding')) codes)
     )
@@ -215,30 +241,40 @@ create table if not exists SILVER.patient_timeline as(
     left join immunization_info i on i.encounter_id = e.encounter_id and e.patient_id = p.patient_id
 );
 
-select * from SILVER.patient_timeline limit 5
+select * from silver.patient_timeline limit 5
     
 '''
 connection_bronze.sql(query).to_df()
 ```
 
-
 ### Export the outcome in a separate duckdb file {.unnumbered}
 As the database now becomes big in size, we extract the patient_timeline and pricelist into another duckdb.
+This decreases the size from 20.5MB to 2.9MB. 
 
 ```{python}
 # first extract tables into a dataframe
-price_list = connection_bronze.sql('Select * from SILVER.price_list').to_df()
-timeline = connection_bronze.sql('Select * from SILVER.patient_timeline').to_df()
+price_list = connection_bronze.sql('Select * from silver.price_list').to_df()
+timeline = connection_bronze.sql('Select * from silver.patient_timeline').to_df()
 
 
 # load from dataframe into SILVER database
 connection_silver.sql('create or replace table price_list as select * from price_list')
 
-connection_silver.sql('create or replace table patient_timeline as select * from patient_timeline')
+connection_silver.sql('create or replace table patient_timeline as select * from timeline')
 
 connection_silver.sql('Select * from patient_timeline limit 5').to_df()
 ```
 
+
+### Export results in parquet files {.unnumbered}
+Again to minimize storage space, we convert the duckdb file to parquet files. The size decreases from 2.9 MB to 550kB.
+
+```{python}
+
+# Export database to parquet files
+connection_silver.sql(f"EXPORT DATABASE '{SILVER}/parquet_export' (FORMAT PARQUET);")
+
+```
 
 ### Close the database connection
 When you finish your analysis always make sure to close the duckdb connection. You can only have one duckdb connection at a time.
@@ -247,3 +283,11 @@ When you finish your analysis always make sure to close the duckdb connection. Y
 connection_silver.close()
 connection_bronze.close()
 ```
+
+
+
+## SQL on FHIR
+**TODO**
+In this document we created our own standardized tables: the patient_timeline and the pricelist table. 
+
+[SQL on FHIR](https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/index.html) is a project that deals with handling fhir resources in SQL exosystems that do not accept the nested FHIR structures. In this project rules are set up and guidelines are given as to how to flatten the fhir resources into tabular views. In this project a [Columnar Schema Guidance](https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/columnar_schema_guidance.html) is written.

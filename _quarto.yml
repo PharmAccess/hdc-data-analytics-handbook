@@ -1,6 +1,7 @@
 project:
   type: website
   output-dir: docs
+  execute-dir: project
 
 website:
   title: "Data Analytics Handbook"
@@ -24,13 +25,13 @@ website:
     collapse-level: 1
     pinned: true
     contents:
-      - href: index.qmd
+      - href: src/index.qmd
         text: Home
-      - about.qmd
-      - synthea.qmd
-      - duckdb.qmd
-      - pandas.qmd
-      - pyspark.qmd
+      - src/about.qmd
+      - src/synthea.qmd
+      - src/duckdb.qmd
+      - src/pandas.qmd
+      - src/pyspark.qmd
 
 format:
   html:

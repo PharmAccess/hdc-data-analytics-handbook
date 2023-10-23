@@ -8,12 +8,19 @@ Pandas is a popular data wrangling library in the data science comunity. Pandas 
 ```{python}
 import pandas as pd
 import duckdb 
+import uuid
+from pathlib import Path
 ```
 
 ### connect to database and retrieve data
 ```{python}
+
+# set paths
+ROOT = Path('.')
+BRONZE = ROOT / 'data' / 'bronze'
+SILVER = ROOT / 'data' / 'silver'
+
 #connect to database
-SILVER = "data/SILVER"
 con = duckdb.connect(f"{SILVER}/pregnancy.duckdb")
 
 #get data
@@ -23,6 +30,13 @@ df_price_list = con.sql('select * from price_list').to_df()
 # close the connection
 con.close()
 ```
+
+```{python}
+df = pd.read_parquet(f"{SILVER}/parquet_export/patient_timeline.parquet")
+# df['patient_id'] = df['patient_id'].apply(lambda x: str(uuid.UUID(bytes =x)))
+df.head()
+```
+
 
 ### Group by, summarise
 

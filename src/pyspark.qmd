@@ -11,48 +11,28 @@ import duckdb
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType,StructField, StringType, DateType,TimestampType,IntegerType
 from pyspark.sql import functions as F
+from pathlib import Path
 ```
 
 ### connect to database and retrieve data
-```{python}
-#connect to database
-SILVER = "data/SILVER"
-con = duckdb.connect(f"{SILVER}/pregnancy.duckdb")
 
-# create a pyspark session
+
+```{python}
+# Set paths 
+
+ROOT = Path('.')
+BRONZE = ROOT / 'data' / 'bronze'
+SILVER = ROOT / 'data' / 'silver'
+
+
+# create spark session
 spark = SparkSession.builder.appName("patient_timeline_analysis").getOrCreate()
 
-#get data
-# first create a pandas dataframe 
-df_pandas = con.sql('select * from patient_timeline').to_df()
+# convert timeline to spark dataframe
+df= spark.read.parquet(f'{SILVER}/parquet_export/patient_timeline.parquet')
 
-#need to specify schema as it doesnt know how to deal with UUID type
-schema = StructType([
-    StructField("patient_id", StringType(), False),
-    StructField('social_security_number',StringType(), True),
-    StructField('prefix',StringType(), True),
-    StructField('first_name',StringType(), True),
-    StructField('last_name',StringType(), True),
-    StructField('birthDate',DateType(), True),
-    StructField('code',StringType(), True),
-    StructField('system',StringType(), True),
-    StructField('organization_id',StringType(), True),
-    StructField('organization_name',StringType(), True),
-    StructField('practitioner_name',StringType(), True),
-    StructField('practitioner_id',StringType(), True),
-    StructField('procedure_name',StringType(), True),
-    StructField('start_time',StringType(), True),
-    StructField('end_time',StringType(), True),
-    StructField('Vaccine_name',StringType(), True),
-    StructField('vaccine_code',StringType(), True),
-    StructField('vaccine_code_system',StringType(), True)
-])
-df = spark.createDataFrame(df_pandas, schema = schema)
-
-df_price_list = spark.createDataFrame(con.sql('select * from price_list').to_df())
-
-# close the connection
-con.close()
+# convert pricelist to spark dataframe
+df_price_list = spark.read.parquet(f'{SILVER}/parquet_export/price_list.parquet')
 ```
 
 ### Group by, summarise
