@@ -1,0 +1,575 @@
+# Datawrangling
+In data analysis, we often repeat similar actions to get valuable information from the data. In this Chapter we describe the most common techniques applied in data analysis, and how they are performed in different programming languages and libraries.
+
+## Split-apply-combine
+Many data analysis problems involve the application of a split-apply-combine strategy,
+where you break up a big problem into manageable pieces, operate on each piece independently and then put all the pieces back together. group_by is the  most common function name for split-apply-combine technique.
+
+These actions can be done with any library, in multiple programming languages. 
+Based on the sample data created in **TODO**, we will go through some standard data analysis actions. 
+We will show how to apply these actions in multiple libraries and languages. 
+
+## Datawrangling languages and libraries
+In this chapter we use the following languages and libraries:
+
+**Pandas 2.0**  
+Pandas is a popular python data wrangling library in the data science comunity. Pandas 2.0 mainly introduces improvements in performance, making it faster and more memory-efficient. 
+
+**Polars**  
+
+**IBIS**  
+
+**PySpark**
+
+**Dplyr**  
+Dplyr is a widely used library in r.
+
+**SQL**  
+Duckdb
+
+## Overview data transformations in different libraries
+
+## Example using the Synthea dataset
+To demonstrate a few data sciene techniques in the different languages and libraries, we use the data generated in **CHAPTER X**
+
+### load required libraries
+Before getting started, we need to load the required libraries. 
+
+::: {.panel-tabset}
+
+## pandas
+
+```{python}
+import pandas as pd
+from pathlib import Path
+```
+
+
+## polars
+```{python}
+# import polars as pl
+from pathlib import Path
+```
+
+
+## SQL
+
+
+## IBIS
+```{python}
+import ibis 
+import pandas as pd
+import duckdb
+from pathlib import Path
+```
+
+## pyspark
+
+```{python}
+import pyspark
+from pyspark.sql import SparkSession
+from pyspark.sql.types import StructType,StructField, StringType, DateType,TimestampType,IntegerType
+from pyspark.sql import functions as F
+from pathlib import Path
+```
+
+:::
+
+### Retrieve data
+
+In this section we will retrieve the data from the parquet files created in **Chapter X**.
+
+First we set the paths where the data is located
+```{python}
+# set paths
+
+
+# TODO: is there a better way?
+# path from which code is run
+# when running entire notebook, this is from the main folder, 
+# when running file locally, this is from the source folder
+ROOT = Path('.')
+if 'src' in str(ROOT.resolve()): # locally
+    ROOT = '..' / ROOT # go one folder up
+BRONZE = ROOT / 'data' / 'bronze'
+SILVER = ROOT / 'data' / 'silver'
+```
+
+Then we import the data in a dataframe
+
+::: {.panel-tabset}
+## pandas
+
+```{python}
+# load data from parquet
+df_timeline_pandas = pd.read_parquet(f"{SILVER}/parquet_export/patient_timeline.parquet")
+df_price_list_pandas = pd.read_parquet(f"{SILVER}/parquet_export/price_list.parquet")
+
+```
+
+## polars
+```{python}
+# read parquet files in polars dateframe
+df_timeline_polars = pl.read_parquet(f"{SILVER}/parquet_export/patient_timeline.parquet")
+df_price_list_polars = pl.read_parquet(f"{SILVER}/parquet_export/price_list.parquet")
+```
+
+## sql
+
+
+## IBIS
+
+**TODO** Show that this is also possible directly on parquet files
+```{python}
+# connect to duckdb using ibis
+con = ibis.duckdb.connect(f"{SILVER}/pregnancy.duckdb")
+#retrieve data
+df_timeline_IBIS = con.table("patient_timeline")
+df_price_list_ibis = con.table("price_list")
+```
+
+## pyspark
+
+```{python}
+# create spark session
+spark = SparkSession.builder.appName("patient_timeline_analysis").getOrCreate()
+
+# convert timeline to spark dataframe
+df_timeline_spark = spark.read.parquet(f'{SILVER}/parquet_export/patient_timeline.parquet')
+
+# convert pricelist to spark dataframe
+df_price_list_spark = spark.read.parquet(f'{SILVER}/parquet_export/price_list.parquet')
+
+```
+
+:::
+
+### Split-apply-combine
+From the patient timeline data, we want to know how many patients each organization has recorded. For this task we can use the split-apply-combine technique. 
+
+* we **split** the data in groups, where each group is a organization
+* we **apply** a function to count the number of patients in the group
+* we **combine** the data back together again
+
+::: {.panel-tabset}
+## pandas
+In the code below, we can see that the groupby function splits the data into different groups (and later combines them again). the agg function applies an aggregation, in this case the unique count of patients in the group. There are a few more actions in this code, renaming the index to organization, and the patient_id column to # patients. 
+
+```{python}
+df_grouped_pandas = df_timeline_pandas.groupby("organization_name").agg(
+    {"patient_id":pd.Series.nunique}
+).rename(
+    columns = {'patient_id':"# patients"}
+).rename_axis('organization')
+
+# show first 5 records 
+df_grouped_pandas.head()
+```
+
+
+## polars
+```{python}
+df_grouped_polars = (
+    df_timeline_polars
+    .group_by("organization_name")
+    .agg(
+        pl.n_unique("patient_id")
+    )
+)
+print(df_grouped_polars.head())
+```
+
+Polars supports both lazy and non-lazy (eager) evaluation. Lazy evaluation means that execution is deferred to the last minute, which can have significant performance advantages.
+
+```{python}
+df_grouped_polars = (
+    df_timeline_polars.lazy()
+    .group_by("organization_name")
+    .agg(
+        pl.n_unique("patient_id")
+    )
+    .collect()
+)
+print(df_grouped_polars)
+```
+
+## sql
+
+
+## IBIS
+
+```{python}
+df_grouped_ibis = df_timeline_IBIS.group_by("organization_name").aggregate(df_timeline_IBIS.patient_id.nunique()).to_pandas()
+df_grouped_ibis.head()
+
+```
+
+```{python}
+df_grouped_ibis = df_timeline_IBIS.group_by("organization_name").aggregate(df_timeline_IBIS.patient_id.nunique())
+ibis.show_sql(df_grouped_ibis)
+```
+
+## pyspark
+
+```{python}
+#option 1, using buid in functions
+df_grouped_pyspark = df_timeline_spark.groupBy('organization_name').agg(
+        F.countDistinct('patient_id'
+    ).alias('# patients')).orderBy(
+        '# patients',ascending = False
+    )
+
+df_grouped_pyspark = df_grouped_pyspark.withColumnRenamed("organization_name", "organization")
+
+# option 2: using SQL 
+df_timeline_spark.createOrReplaceTempView("timeline")
+df_grouped_pyspark = spark.sql('''
+Select 
+    organization_name, 
+    count(distinct patient_id) as nr_of_patients 
+from timeline group by organization_name 
+order by count(distinct patient_id) DESC
+''')
+
+df_grouped_pyspark.limit(5).show()
+
+```
+
+:::
+
+### Filter
+In data analysis it also frequently occurs that you are interested in only a subset of the data. For that reason we apply the filter technique. From our patients we only want to keep the well child visits. 
+
+::: {.panel-tabset}
+## pandas
+
+```{python}
+# option 1
+value = 'Well child visit (procedure)'
+df_filtered_pandas = df_timeline_pandas[df_timeline_pandas['procedure_name'] == value]
+
+# option 2
+df_filtered_pandas = df_timeline_pandas.loc[df_timeline_pandas['procedure_name'] == value]
+
+# option 3
+df_filtered_pandas = df_filtered_pandas.query(f"procedure_name == '{value}' ")
+
+#show results
+df_filtered_pandas[['patient_id','start_time','procedure_name']].head()
+```
+
+
+## polars
+```{python}
+df_filtered_polars = (
+    df_timeline_polars
+    .filter(pl.col("procedure_name") == "Well child visit (procedure)")
+)
+print(df_filtered_polars.head())
+```
+
+## sql
+
+
+## IBIS
+
+```{python}
+df_filtered_ibis = df_timeline_IBIS.filter(df_timeline_IBIS.procedure_name == "Well child visit (procedure)").to_pandas()
+df_filtered_ibis.head()
+
+```
+
+
+## pyspark
+
+```{python}
+# option 1
+value = 'Well child visit (procedure)'
+df_filtered_pyspark = df_timeline_spark.filter(df_timeline_spark['procedure_name']==value)
+
+# option 2
+df_filtered_pyspark = df_timeline_spark.filter(F.expr(f"procedure_name == '{value}'"))
+
+# option 3 - sql
+df_timeline_spark.createOrReplaceTempView("timeline")
+df_filtered_pyspark = spark.sql(f"Select * from timeline where procedure_name =='{value}'")
+
+#show results
+df_filtered_pyspark[['patient_id','start_time','procedure_name']].limit(5).show()
+```
+
+:::
+
+Besides filtering data by content it is also possible to filter the columns one wishes to show
+
+::: {.panel-tabset}
+## pandas
+
+```{python}
+df_filtered_pandas.filter(items = ['patient_id','birthDate','organization_name']).head(1)
+```
+
+```{python}
+df_filtered_pandas[['patient_id','birthDate','organization_name']].head(1)
+```
+
+
+## polars
+```{python}
+
+```
+
+## sql
+
+
+## IBIS
+
+```{python}
+
+
+```
+
+
+## pyspark
+
+```{python}
+df_filtered_pyspark.select('patient_id','birthDate','organization_name').limit(1).show()
+```
+
+:::
+
+### Mutate
+Another common action, is that you want create adapt data. For example, we want to create another column with the year that a visit occured in the patient timeline, based on the start_time that is available. 
+
+
+::: {.panel-tabset}
+## pandas
+
+```{python}
+# transform start_time to datetime (its currently string format)
+df_timeline_pandas['start_time'] = pd.to_datetime(df_timeline_pandas['start_time'], utc=  True)
+df_timeline_pandas['start_time'].dtype
+
+#option 1
+df_timeline_pandas['year'] = df_timeline_pandas['start_time'].dt.year
+
+#option 2
+df_timeline_pandas = df_timeline_pandas.assign(year=df_timeline_pandas['start_time'].dt.year )
+
+df_timeline_pandas[['start_time','year']].head(1)
+```
+
+
+## polars
+```{python}
+df_new_var_polars = (
+    df_timeline_polars
+    .with_columns(
+        pl.col("start_time").str.to_datetime(format="%Y-%m-%dT%H:%M:%S%z")
+        .dt.year().alias("start_year")
+    )
+)
+print(df_new_var_polars.head())
+```
+
+## sql
+
+
+## IBIS
+
+```{python}
+df_new_var_ibis = df_timeline_IBIS.mutate(start_year=df_timeline_IBIS.start_time.cast("timestamp").year()).to_pandas()
+df_new_var_ibis.head()
+
+```
+
+
+## pyspark
+
+```{python}
+# transform start_time to datetime (its currently string format)
+df_timeline_spark = df_timeline_spark.withColumn("start_time", F.to_utc_timestamp(df_timeline_spark["start_time"], "Europe/Amsterdam"))
+
+df_timeline_spark = df_timeline_spark.withColumn("year", F.year(df_timeline_spark["start_time"]))
+df_timeline_spark.select('start_time','year').limit(3).show()
+
+```
+
+:::
+
+### Order
+It often occurs that you want to order your data. In this case let's order the patient timeline by start_time.
+
+::: {.panel-tabset}
+## pandas
+
+```{python}
+df_ordered_pandas = df_timeline_pandas.sort_values(by = 'start_time', ascending = False)
+df_ordered_pandas[['patient_id','start_time','procedure_name']].head()
+```
+
+
+## polars
+```{python}
+df_ordered_polars = (
+    df_timeline_polars
+    .with_columns(
+        pl.col("start_time").str.to_datetime(format="%Y-%m-%dT%H:%M:%S%z")
+    )
+    .sort("start_time")
+)
+print(df_ordered_polars.head())
+```
+
+## sql
+
+
+## IBIS
+
+```{python}
+df_ordered_ibis = df_timeline_IBIS.order_by(df_timeline_IBIS.start_time.cast("timestamp")).to_pandas()
+df_ordered_ibis.head()
+
+```
+
+
+## pyspark
+
+```{python}
+df_ordered_pyspark = df_timeline_spark.orderBy('start_time',ascending = False)
+df_ordered_pyspark.limit(5).show()
+```
+
+:::
+
+### Rename
+Another action that is done frequently is the renaming of a column. As an example we rename the birthDate column to birth_date
+
+::: {.panel-tabset}
+## pandas
+
+In pandas,  many actions such as *rename* can be adapted directly in the same dataframe by adding the option inplace = True. 
+
+Alternatively, one can create a new dataframe and keep the name the same in the original dataframe.
+
+```{python}
+#option 1 - change in dataframe
+df_timeline_pandas.rename(columns = {'birthDate':'birth_date'}, inplace = True)
+
+#option 2 - change only in new dataframe
+df_renamed_pandas = df_timeline_pandas.rename(columns = {'birthDate':'birth_date'})
+df_renamed_pandas.head(1)
+```
+
+
+## polars
+```{python}
+df_renamed_polars = (
+    df_timeline_polars
+    .rename({"birthDate": "birth_date"})
+)
+print(df_renamed_polars.head(1))
+```
+
+## sql
+
+
+## IBIS
+
+```{python}
+
+df_renamed_ibis = df_timeline_IBIS.relabel({"birthDate": "birth_date"}).to_pandas()
+df_renamed_ibis.head(1)
+```
+
+
+## pyspark
+
+```{python}
+df_renamed_pyspark = df_timeline_spark.withColumnRenamed("birthDate", "birth_date")
+df_renamed_pyspark.head(1)
+```
+
+:::
+
+
+### Join
+It’s rare that a data analysis involves only a single data frame. Typically you have many data frames, and you must join them together to answer the questions that you’re interested in.
+
+**inner join**
+https://d33wubrfki0l68.cloudfront.net/3abea0b730526c3f053a3838953c35a0ccbe8980/7f29b/diagrams/join-inner.png
+
+**left join**
+An inner join keeps observations that appear in both tables. An outer join keeps observations that appear in at least one of the tables. There are three types of outer joins:
+
+* A left join keeps all observations in x.
+* A right join keeps all observations in y.
+* A full join keeps all observations in x and y.
+
+
+The most commonly used join is the left join: you use this whenever you look up additional data from another table, because it preserves the original observations even when there isn’t a match. The left join should be your default join: use it unless you have a strong reason to prefer one of the others.
+
+https://d33wubrfki0l68.cloudfront.net/9c12ca9e12ed26a7c5d2aa08e36d2ac4fb593f1e/79980/diagrams/join-outer.png
+
+**right join**
+
+**outer join**
+
+
+::: {.panel-tabset}
+## pandas
+
+```{python}
+df_joined_pandas = pd.merge(
+    df_timeline_pandas,
+    df_price_list_pandas, 
+    left_on = ['vaccine_code','vaccine_code_system'], 
+    right_on = ['code','system'], 
+    how ='left'
+)
+
+df_joined_pandas.filter(items = ['patient_id','start_time','year','vaccine_name','item_claimed','USD']).head()
+```
+
+
+## polars
+```{python}
+df_joined_polars = (
+    df_timeline_polars
+    .join(
+        df_price_list_polars,
+        left_on=["vaccine_code", "vaccine_code_system"],
+        right_on=["code", "system"],
+        how="left"
+    )
+)
+print(df_joined_polars.head())
+```
+
+## sql
+
+
+## IBIS
+
+```{python}
+df_joined_ibis = df_timeline_IBIS.left_join(
+    df_price_list_ibis, [
+        df_timeline_IBIS.vaccine_code == df_price_list_ibis.code,
+        df_timeline_IBIS.vaccine_code_system == df_price_list_ibis.system
+    ]
+).to_pandas()
+df_joined_ibis.head()
+
+```
+
+
+## pyspark
+
+```{python}
+df_joined_pyspark = df_timeline_spark.join(df_price_list_spark,(df_timeline_spark['vaccine_code'] == df_price_list_spark['code']) & (df_timeline_spark['vaccine_code_system'] == df_price_list_spark['system']),'inner')
+
+df_joined_pyspark.limit(5).show()
+
+```
+
+:::

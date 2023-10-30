@@ -1,4 +1,4 @@
-# Synthea patient generator
+# Synthea synthetic patient data
 The examples in this hand book are based on a synthetic patient dataset that was generated using the [synthea patient generator](https://github.com/synthetichealth/synthea). With this generator, it is possible to generate a patient population and associated health records in fhir format for a specific group op patients. For this handbook, we generated a dataset that includes mothers and the health records for their pregnancy journey.
 
 ## Synthea Set Up

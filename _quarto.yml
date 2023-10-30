@@ -30,8 +30,7 @@ website:
       - src/about.qmd
       - src/synthea.qmd
       - src/duckdb.qmd
-      - src/pandas.qmd
-      - src/pyspark.qmd
+      - src/data-wrangling-libraries.qmd
 
 format:
   html:

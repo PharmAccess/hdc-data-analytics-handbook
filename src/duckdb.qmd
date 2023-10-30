@@ -10,7 +10,6 @@ Then import the library:
 
 ```{python}
 import duckdb
-import quarto
 from pathlib import Path
 ```
 
