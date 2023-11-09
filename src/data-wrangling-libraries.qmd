@@ -47,7 +47,7 @@ from pathlib import Path
 
 ## polars
 ```{python}
-# import polars as pl
+import polars as pl
 from pathlib import Path
 ```
 
