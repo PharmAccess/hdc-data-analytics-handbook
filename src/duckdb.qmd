@@ -30,11 +30,14 @@ To use DuckDB, we first need to create a connection to a database. To do so we n
 
 # ROOT = Path(__file__).resolve().parent
 # ROOT = quarto.project.root
+
+
 ROOT = Path('.')
+if 'src' in str(ROOT.resolve()): # locally
+    ROOT = '..' / ROOT # go one folder up
 BRONZE = ROOT / 'data' / 'bronze'
 SILVER = ROOT / 'data' / 'silver'
-SYNTHEA_DUMP = 'data/bronze/synthea/fhir'
-
+SYNTHEA_DUMP = ROOT /'data'/'bronze'/'synthea'/'fhir'
 
 connection_bronze = duckdb.connect(f"{BRONZE}/raw.duckdb")
 connection_silver = duckdb.connect(f"{SILVER}/pregnancy.duckdb")

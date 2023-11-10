@@ -6,7 +6,7 @@ Many data analysis problems involve the application of a split-apply-combine str
 where you break up a big problem into manageable pieces, operate on each piece independently and then put all the pieces back together. group_by is the  most common function name for split-apply-combine technique.
 
 These actions can be done with any library, in multiple programming languages. 
-Based on the sample data created in **TODO**, we will go through some standard data analysis actions. 
+Based on the sample data created in [Synthea patient generator](synthea.qmd) and [Create views using DuckDB](duckdb.qmd), we will go through some standard data analysis actions. 
 We will show how to apply these actions in multiple libraries and languages. 
 
 ## Datawrangling languages and libraries
@@ -20,14 +20,27 @@ Pandas is a popular python data wrangling library in the data science comunity. 
 **IBIS**  
 
 **PySpark**
+PySpark is a python library for Apache Spark, an open source computing system. It enables you to work with large datasets, or run complex calculations. 
 
 **Dplyr**  
 Dplyr is a widely used library in r.
 
-**SQL**  
-Duckdb
+**SQL - DuckDB**  
+In this handbook we use DuckDB to show how to perform datawrangling with SQL. DuckDB SQL is almost the same as plane SQL but has a couple of extra functions to handle nested data and a couple of functions that help with data analysis. 
 
 ## Overview data transformations in different libraries
+In the table below you can find an overview of techniques that are often used in data analysis and the corresponding functions for them in the discussed libraries/languages.
+
+| concept | pandas | Polars | IBIS | PySpark | Dplyr | SQL |
+| --- | --- | ---| --- | --- | --- | --- |
+| Split | groupby() | group_by() | group_by() | groupBy() | ? | GROUP BY |
+| Apply | many functions | many functions | many functions | many functions | many functions | many functions | 
+| combine | join (), merge() | join() | left_join, inner_join() etc. |  join() | ? | LEFT JOIN, JOIN etc. |
+| Filtering (row based)| loc[], query() | filter() | filter() | filter() | ? | WHERE | 
+| Mutate | assign() | with_columns() | mutuate() | withColumn() | ? | ADD | 
+| Ordering | sort_values() | sort() | order_by() | orderBy() | ? | ORDER BY | 
+
+
 
 ## Example using the Synthea dataset
 To demonstrate a few data sciene techniques in the different languages and libraries, we use the data generated in **CHAPTER X**
@@ -41,26 +54,26 @@ Before getting started, we need to load the required libraries.
 
 ```{python}
 import pandas as pd
-from pathlib import Path
 ```
 
 
 ## polars
 ```{python}
 import polars as pl
-from pathlib import Path
 ```
 
 
 ## SQL
 
+```{python}
+import duckdb
+```
 
 ## IBIS
 ```{python}
 import ibis 
 import pandas as pd
 import duckdb
-from pathlib import Path
 ```
 
 ## pyspark
@@ -70,7 +83,6 @@ import pyspark
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType,StructField, StringType, DateType,TimestampType,IntegerType
 from pyspark.sql import functions as F
-from pathlib import Path
 ```
 
 :::
@@ -82,7 +94,7 @@ In this section we will retrieve the data from the parquet files created in **Ch
 First we set the paths where the data is located
 ```{python}
 # set paths
-
+from pathlib import Path
 
 # TODO: is there a better way?
 # path from which code is run
@@ -114,7 +126,14 @@ df_timeline_polars = pl.read_parquet(f"{SILVER}/parquet_export/patient_timeline.
 df_price_list_polars = pl.read_parquet(f"{SILVER}/parquet_export/price_list.parquet")
 ```
 
-## sql
+## SQL
+
+In [Creating views using DuckDB](duckdb.qmd), we already showed how to create a DuckDB database and read in parquet data in duckdb. Therefore we will connect here to the already created database with soley the patient_timeline and price_list table available.
+```{python}
+# connect to the database
+con_duckdb = duckdb.connect(f"{SILVER}/pregnancy.duckdb")
+
+```
 
 
 ## IBIS
@@ -122,10 +141,10 @@ df_price_list_polars = pl.read_parquet(f"{SILVER}/parquet_export/price_list.parq
 **TODO** Show that this is also possible directly on parquet files
 ```{python}
 # connect to duckdb using ibis
-con = ibis.duckdb.connect(f"{SILVER}/pregnancy.duckdb")
+con_ibis = ibis.duckdb.connect(f"{SILVER}/pregnancy.duckdb")
 #retrieve data
-df_timeline_IBIS = con.table("patient_timeline")
-df_price_list_ibis = con.table("price_list")
+df_timeline_IBIS = con_ibis.table("patient_timeline")
+df_price_list_ibis = con_ibis.table("price_list")
 ```
 
 ## pyspark
@@ -193,8 +212,24 @@ df_grouped_polars = (
 print(df_grouped_polars)
 ```
 
-## sql
+## SQL
 
+```{python}
+query = f"""
+create or replace table organization_grouped as (
+    select 
+        organization_name as organization,
+        count(distinct patient_id) as patient_count
+    from patient_timeline
+    group by organization_name
+) ;
+select * from organization_grouped 
+limit 5;
+
+
+"""
+con_duckdb.sql(query).to_df()
+```
 
 ## IBIS
 
@@ -268,8 +303,20 @@ df_filtered_polars = (
 print(df_filtered_polars.head())
 ```
 
-## sql
+## SQL
 
+```{python}
+query = """
+create or replace table filtered_table as (
+    Select 
+        * 
+    from patient_timeline 
+    where procedure_name = 'Well child visit (procedure)'
+);
+select * from filtered_table limit 5;
+"""
+con_duckdb.sql(query).to_df()
+```
 
 ## IBIS
 
@@ -319,8 +366,18 @@ df_filtered_pandas[['patient_id','birthDate','organization_name']].head(1)
 
 ```
 
-## sql
+## SQL
 
+```{python}
+query = """
+Select 
+    patient_id,
+    birthDate,
+    organization_name
+from patient_timeline limit 1
+"""
+con_duckdb.sql(query).to_df()
+```
 
 ## IBIS
 
@@ -340,6 +397,7 @@ df_filtered_pyspark.select('patient_id','birthDate','organization_name').limit(1
 
 ### Mutate
 Another common action, is that you want create adapt data. For example, we want to create another column with the year that a visit occured in the patient timeline, based on the start_time that is available. 
+We see that currently the date is in a specific timezone, you need to take this into account when converting it in a datatime format. For now we keep the date in the same timezone, before extracting the year from it.
 
 
 ::: {.panel-tabset}
@@ -372,8 +430,17 @@ df_new_var_polars = (
 print(df_new_var_polars.head())
 ```
 
-## sql
+## SQL
 
+```{python}
+query = """
+Select
+    cast(start_time as datetime) as start_time,
+    year(cast(start_time as datetime)) as year
+from patient_timeline;
+"""
+con_duckdb.sql(query).to_df()
+```
 
 ## IBIS
 
@@ -398,7 +465,7 @@ df_timeline_spark.select('start_time','year').limit(3).show()
 :::
 
 ### Order
-It often occurs that you want to order your data. In this case let's order the patient timeline by start_time.
+It often occurs that you want to order your data. In this case let's order the patient timeline by start_time. Most libraries automatically order in an ascending/asc order: oldest first, and alow you to order descending/desc (newest first). 
 
 ::: {.panel-tabset}
 ## pandas
@@ -421,8 +488,18 @@ df_ordered_polars = (
 print(df_ordered_polars.head())
 ```
 
-## sql
+## SQL
 
+```{python}
+query = """
+Select 
+    * 
+from patient_timeline
+order by start_time asc 
+limit 5
+"""
+con_duckdb.sql(query).to_df()
+```
 
 ## IBIS
 
@@ -471,7 +548,19 @@ df_renamed_polars = (
 print(df_renamed_polars.head(1))
 ```
 
-## sql
+## SQL
+
+```{python}
+query = """
+alter table patient_timeline
+rename column birthDate to birth_date;
+
+select * from patient_timeline limit 5;
+"""
+print(con_duckdb.sql(query).to_df())
+
+con_duckdb.sql("alter table patient_timeline rename column birth_date to birthDate")
+```
 
 
 ## IBIS
@@ -546,7 +635,18 @@ df_joined_polars = (
 print(df_joined_polars.head())
 ```
 
-## sql
+## SQL
+
+```{python}
+query = """
+Select 
+* 
+from patient_timeline pt
+left join price_list pl on pt.vaccine_code = pl.code and pt.vaccine_code_system = pl.system
+limit 5;
+"""
+con_duckdb.sql(query).to_df()
+```
 
 
 ## IBIS
@@ -573,3 +673,13 @@ df_joined_pyspark.limit(5).show()
 ```
 
 :::
+
+
+### Finishing up
+
+When using duckdb it is very important to always close the database connection. If one is connected to the databas a wall is created to block anyone else from connecting at the same time. This prevents conflicts when more are manipulating the data at the same time. 
+
+```{python}
+#close connection to the duckdb database
+con_duckdb.close()
+```
