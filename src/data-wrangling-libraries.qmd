@@ -44,7 +44,7 @@ In the table below you can find an overview of techniques that are often used in
 
 
 ## Example using the Synthea dataset
-To demonstrate a few data sciene techniques in the different languages and libraries, we use the data generated in **CHAPTER X**
+To demonstrate a few data sciene techniques in the different languages and libraries, we use the data generated with the [Synthea Patient Generator](synthea.qmd).
 
 ### load required libraries
 Before getting started, we need to load the required libraries. 
@@ -90,7 +90,7 @@ from pyspark.sql import functions as F
 
 ### Retrieve data
 
-In this section we will retrieve the data from the parquet files created in **Chapter X**.
+In this section we will retrieve the data from the parquet files created in [Creating views with DuckDB](duckdb.qmd).
 
 First we set the paths where the data is located
 ```{python}
@@ -586,25 +586,19 @@ df_renamed_pyspark.head(1)
 ### Join
 It’s rare that a data analysis involves only a single data frame. Typically you have many data frames, and you must join them together to answer the questions that you’re interested in.
 
-**inner join**
-https://d33wubrfki0l68.cloudfront.net/3abea0b730526c3f053a3838953c35a0ccbe8980/7f29b/diagrams/join-inner.png
+An inner join keeps observations that appear in both tables. 
 
-**left join**
-An inner join keeps observations that appear in both tables. An outer join keeps observations that appear in at least one of the tables. There are three types of outer joins:
+![inner join](images/join-inner.png){#inner-join}
+
+An outer join keeps observations that appear in at least one of the tables. There are three types of outer joins:
 
 * A left join keeps all observations in x.
 * A right join keeps all observations in y.
 * A full join keeps all observations in x and y.
 
+![outer join](images/join-outer.png){#outer-join}
 
 The most commonly used join is the left join: you use this whenever you look up additional data from another table, because it preserves the original observations even when there isn’t a match. The left join should be your default join: use it unless you have a strong reason to prefer one of the others.
-
-https://d33wubrfki0l68.cloudfront.net/9c12ca9e12ed26a7c5d2aa08e36d2ac4fb593f1e/79980/diagrams/join-outer.png
-
-**right join**
-
-**outer join**
-
 
 ::: {.panel-tabset}
 ## pandas
