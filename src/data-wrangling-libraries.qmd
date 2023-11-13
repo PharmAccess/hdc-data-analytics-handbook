@@ -336,8 +336,8 @@ con_duckdb.sql(query).to_df()
 ## IBIS
 
 ```{python}
-df_filtered_ibis = df_timeline_IBIS.filter(df_timeline_IBIS.procedure_name == "Well child visit (procedure)").to_pandas()
-df_filtered_ibis.head()
+df_filtered_ibis = df_timeline_IBIS.filter(df_timeline_IBIS.procedure_name == "Well child visit (procedure)")
+df_filtered_ibis.to_pandas().head()
 
 ```
 
@@ -378,7 +378,9 @@ df_filtered_pandas[['patient_id','birthDate','organization_name']].head(1)
 
 ## polars
 ```{python}
-
+df_filtered_polars.select([
+    pl.col("patient_id"), pl.col("birthDate"), pl.col("organization_name")
+]).head()
 ```
 
 ## SQL
@@ -397,8 +399,9 @@ con_duckdb.sql(query).to_df()
 ## IBIS
 
 ```{python}
-
-
+df_filtered_ibis.select(
+    'patient_id','birthDate','organization_name'
+).to_pandas().head()
 ```
 
 
