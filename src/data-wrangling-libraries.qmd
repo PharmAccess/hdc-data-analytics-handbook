@@ -133,8 +133,23 @@ df_price_list_polars = pl.read_parquet(f"{SILVER}/parquet_export/price_list.parq
 In [Creating views using DuckDB](duckdb.qmd), we already showed how to create a DuckDB database and read in parquet data in duckdb. Therefore we will connect here to the already created database with soley the patient_timeline and price_list table available.
 ```{python}
 # connect to the database
-con_duckdb = duckdb.connect(f"{SILVER}/pregnancy.duckdb")
+con_duckdb = duckdb.connect()
 
+con_duckdb.sql(
+    f"""
+    CREATE TABLE patient_timeline AS
+    SELECT *
+    FROM read_parquet('{SILVER}/parquet_export/patient_timeline.parquet');
+    """
+)
+
+con_duckdb.sql(
+    f"""
+    CREATE TABLE price_list AS
+    SELECT *
+    FROM read_parquet('{SILVER}/parquet_export/price_list.parquet');
+    """
+)
 ```
 
 
@@ -142,11 +157,9 @@ con_duckdb = duckdb.connect(f"{SILVER}/pregnancy.duckdb")
 
 **TODO** Show that this is also possible directly on parquet files
 ```{python}
-# connect to duckdb using ibis
-con_ibis = ibis.duckdb.connect(f"{SILVER}/pregnancy.duckdb")
-#retrieve data
-df_timeline_IBIS = con_ibis.table("patient_timeline")
-df_price_list_ibis = con_ibis.table("price_list")
+# read parquet files with ibis
+df_timeline_IBIS = ibis.read_parquet(f'{SILVER}/parquet_export/patient_timeline.parquet')
+df_price_list_ibis = ibis.read_parquet(f'{SILVER}/parquet_export/price_list.parquet')
 ```
 
 ## pyspark
