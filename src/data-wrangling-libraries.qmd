@@ -107,17 +107,22 @@ graph storage_compute {
 First we set the paths where the data is located
 ```{python}
 # set paths
-from pathlib import Path
+#from pathlib import Path
 
 # TODO: is there a better way?
 # path from which code is run
 # when running entire notebook, this is from the main folder, 
 # when running file locally, this is from the source folder
-ROOT = Path('.')
-if 'src' in str(ROOT.resolve()): # locally
-    ROOT = '..' / ROOT # go one folder up
-BRONZE = ROOT / 'data' / 'bronze'
-SILVER = ROOT / 'data' / 'silver'
+#ROOT = Path('.')
+#if 'src' in str(ROOT.resolve()): # locally
+#    ROOT = '..' / ROOT # go one folder up
+#BRONZE = ROOT / 'data' / 'bronze'
+#SILVER = ROOT / 'data' / 'silver'
+```
+
+```{python}
+BRONZE = 'data/bronze'
+SILVER = 'data/silver'
 ```
 
 Then we import the data in a dataframe
