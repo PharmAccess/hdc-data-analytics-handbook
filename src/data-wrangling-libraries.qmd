@@ -16,8 +16,10 @@ In this chapter we use the following languages and libraries:
 Pandas is a popular python data wrangling library in the data science comunity. Pandas 2.0 mainly introduces improvements in performance, making it faster and more memory-efficient. 
 
 **Polars**  
+Polars is very similar to pandas in terms of functionality. However, polars is based on Rust, which makes it highly performant.
 
 **IBIS**  
+Ibis is a python library which enables you to write your code in a pandas-like way, and the translates it to a lot of different backends. This enables you to change backends with only minor adjustments to your data wrangling code.
 
 **PySpark**
 PySpark is a python library for Apache Spark, an open source computing system. It enables you to work with large datasets, or run complex calculations. 
