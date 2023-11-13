@@ -35,13 +35,13 @@ In the table below you can find an overview of techniques that are often used in
 
 | concept | pandas | Polars | IBIS | PySpark | Dplyr | SQL |
 | --- | --- | ---| --- | --- | --- | --- |
-| *Split* | groupby() | group_by() | group_by() | groupBy() | ? | GROUP BY |
+| *Split* | groupby() | group_by() | group_by() | groupBy() | group_by() | GROUP BY |
 | *Apply* | many functions | many functions | many functions | many functions | many functions | many functions | 
-| *combine* | join (), merge() | join() | left_join, inner_join() etc. |  join() | ? | LEFT JOIN, JOIN etc. |
-| *Filtering (row based)*| loc[], query() | filter() | filter() | filter() | ? | WHERE | 
-| *Filtering (column based)*| loc[], iloc[],| select() | - | select() | ? | SELECT | 
-| *Mutate* | assign() | with_columns() | mutuate() | withColumn() | ? | ADD | 
-| *Ordering* | sort_values() | sort() | order_by() | orderBy() | ? | ORDER BY | 
+| *combine* | join (), merge() | join() | left_join, inner_join() etc. |  join() | left_join, inner_join() etc. | LEFT JOIN, JOIN etc. |
+| *Filtering (row based)*| loc[], query() | filter() | filter() | filter() | filter() | WHERE | 
+| *Filtering (column based)*| loc[], iloc[],| select() | - | select() | select() | SELECT | 
+| *Mutate* | assign() | with_columns() | mutuate() | withColumn() | mutate() | ADD | 
+| *Ordering* | sort_values() | sort() | order_by() | orderBy() | arrange() | ORDER BY | 
 
 
 
