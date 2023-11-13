@@ -1,6 +1,6 @@
 duckdb==0.9.0
 ibis==3.2.0
-'ibis-framework[duckdb]==6.2.0'
+ibis-framework[duckdb]==6.2.0
 nbclient==0.8.0
 nbformat==5.9.2
 pandas==2.0.0
