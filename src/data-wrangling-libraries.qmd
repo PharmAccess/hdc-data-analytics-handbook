@@ -93,6 +93,15 @@ from pyspark.sql import functions as F
 
 In this section we will retrieve the data from the parquet files created in [Creating views with DuckDB](duckdb.qmd).
 
+Using parquet files enables us to separate storage and compute. This provides us with the flexibility to (for example) scale out storage engine, or change our compute backend, without affecting the other.
+
+```{dot}
+graph storage_compute {
+    node [shape = box];
+    storage -- compute;
+}
+```
+
 First we set the paths where the data is located
 ```{python}
 # set paths
