@@ -22,8 +22,8 @@ In this chapter we use the following languages and libraries:
 **PySpark**
 [PySpark]() is a python library for Apache Spark, an open source computing system. It enables you to work with large datasets, or run complex calculations. 
 
-**Dplyr**  
-Dplyr is a widely used library in r.
+**dplyr**  
+dplyr is a widely used library in r.
 
 **SQL - DuckDB**  
 In this handbook we use DuckDB to show how to perform datawrangling with SQL. DuckDB SQL is almost the same as plane SQL but has a couple of extra functions to handle nested data and a couple of functions that help with data analysis. [DuckDB]() is **TODO**
@@ -31,7 +31,7 @@ In this handbook we use DuckDB to show how to perform datawrangling with SQL. Du
 ## Overview data transformations in different libraries
 In the table below, you can find an overview of techniques that are often used in data analysis and the corresponding functions for them in the discussed libraries/languages.
 
-| concept | pandas | Polars | IBIS | PySpark | Dplyr | SQL |
+| concept | pandas | Polars | IBIS | PySpark | dplyr | SQL |
 | --- | --- | ---| --- | --- | --- | --- |
 | *Split* | groupby() | group_by() | group_by() | groupBy() | ? | GROUP BY |
 | *Apply* | many functions | many functions | many functions | many functions | many functions | many functions | 
@@ -201,7 +201,7 @@ df_price_list_spark = spark.read.parquet(f'{SILVER}/parquet_export/price_list.pa
 
 ```
 
-## Dplyr
+## dplyr
 ```{python}
 %%R
 con <- dbConnect(
@@ -328,7 +328,7 @@ df_grouped_pyspark.limit(5).show()
 ```
 
 
-## Dplyr
+## dplyr
 ```{python}
 %%R
 df_grouped <- df %>% 
@@ -415,7 +415,7 @@ df_filtered_pyspark = spark.sql(f"Select * from timeline where procedure_name ==
 df_filtered_pyspark[['patient_id','start_time','procedure_name']].limit(5).show()
 ```
 
-## Dplyr
+## dplyr
 ```{python}
 %%R
 df_filtered <- df %>%
@@ -472,7 +472,7 @@ con_duckdb.sql(query).to_df()
 df_filtered_pyspark.select('patient_id','birthDate','organization_name').limit(1).show()
 ```
 
-## Dplyr
+## dplyr
 ```{python}
 #TODO
 ```
@@ -547,7 +547,7 @@ df_timeline_spark.select('start_time','year').limit(3).show()
 ```
 
 
-## Dplyr
+## dplyr
 ```{python}
 %%R
 df_new_var <- df %>%
@@ -611,7 +611,7 @@ df_ordered_pyspark = df_timeline_spark.orderBy('start_time',ascending = False)
 df_ordered_pyspark.limit(5).show()
 ```
 
-## Dplyr
+## dplyr
 ```{python}
 %%R
 df_ordered <- df %>%
@@ -683,7 +683,7 @@ df_renamed_pyspark = df_timeline_spark.withColumnRenamed("birthDate", "birth_dat
 df_renamed_pyspark.head(1)
 ```
 
-## Dplyr
+## dplyr
 ```{python}
 %%R
 df_renamed <- df %>%
@@ -778,7 +778,7 @@ df_joined_pyspark.limit(5).show()
 
 ```
 
-## Dplyr
+## dplyr
 ```{python}
 %%R
 df_joined <- df %>%
