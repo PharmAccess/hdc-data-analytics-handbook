@@ -101,6 +101,7 @@ library(dplyr)
 library(duckdb)
 library(glue)
 library(lubridate)
+library(knitr)
 ```
 
 :::
@@ -367,7 +368,7 @@ df_grouped <- df %>%
     number_of_patients = n_distinct(patient_id),
     .groups = "drop"
   )
-head(df_grouped)
+kable(head(df_grouped))
 ```
 
 :::
