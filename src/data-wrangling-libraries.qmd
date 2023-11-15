@@ -16,8 +16,10 @@ In this chapter we use the following languages and libraries:
 [Pandas]() is a popular python data wrangling library in the data science comunity. Pandas 2.0 mainly introduces improvements in performance, making it faster and more memory-efficient. 
 
 **Polars**  
+Polars is very similar to pandas in terms of functionality. However, polars is based on Rust, which makes it highly performant.
 
 **IBIS**  
+Ibis is a python library which enables you to write your code in a pandas-like way, and the translates it to a lot of different backends. This enables you to change backends with only minor adjustments to your data wrangling code.
 
 **PySpark**
 [PySpark]() is a python library for Apache Spark, an open source computing system. It enables you to work with large datasets, or run complex calculations. 
@@ -33,13 +35,13 @@ In the table below, you can find an overview of techniques that are often used i
 
 | concept | pandas | Polars | IBIS | PySpark | dplyr | SQL |
 | --- | --- | ---| --- | --- | --- | --- |
-| *Split* | groupby() | group_by() | group_by() | groupBy() | ? | GROUP BY |
+| *Split* | groupby() | group_by() | group_by() | groupBy() | group_by() | GROUP BY |
 | *Apply* | many functions | many functions | many functions | many functions | many functions | many functions | 
-| *combine* | join (), merge() | join() | left_join, inner_join() etc. |  join() | ? | LEFT JOIN, JOIN etc. |
-| *Filtering (row based)*| loc[], query() | filter() | filter() | filter() | ? | WHERE | 
-| *Filtering (column based)*| loc[], iloc[],| select() | - | select() | ? | SELECT | 
-| *Mutate* | assign() | with_columns() | mutuate() | withColumn() | ? | ADD | 
-| *Ordering* | sort_values() | sort() | order_by() | orderBy() | ? | ORDER BY | 
+| *combine* | join (), merge() | join() | left_join, inner_join() etc. |  join() | left_join, inner_join() etc. | LEFT JOIN, JOIN etc. |
+| *Filtering (row based)*| loc[], query() | filter() | filter() | filter() | filter() | WHERE | 
+| *Filtering (column based)*| loc[], iloc[],| select() | - | select() | select() | SELECT | 
+| *Mutate* | assign() | with_columns() | mutuate() | withColumn() | mutate() | ADD | 
+| *Ordering* | sort_values() | sort() | order_by() | orderBy() | arrange() | ORDER BY | 
 
 
 
@@ -107,24 +109,39 @@ library(lubridate)
 
 In this section we will retrieve the data from the parquet files created in [Creating views with DuckDB](duckdb.qmd).
 
+Using parquet files enables us to separate storage and compute. This provides us with the flexibility to (for example) scale out storage engine, or change our compute backend, without affecting the other.
+
+```{dot}
+graph storage_compute {
+    node [shape = box];
+    storage -- compute;
+}
+```
+
 First, we set the paths where the data is located
 
 :::{.panel-tabset}
 
 ## Python
+
 ```{python}
 # set paths
-from pathlib import Path
+#from pathlib import Path
 
 # TODO: is there a better way?
 # path from which code is run
 # when running entire notebook, this is from the main folder, 
 # when running file locally, this is from the source folder
-ROOT = Path('.')
-if 'src' in str(ROOT.resolve()): # locally
-    ROOT = '..' / ROOT # go one folder up
-BRONZE = ROOT / 'data' / 'bronze'
-SILVER = ROOT / 'data' / 'silver'
+#ROOT = Path('.')
+#if 'src' in str(ROOT.resolve()): # locally
+#    ROOT = '..' / ROOT # go one folder up
+#BRONZE = ROOT / 'data' / 'bronze'
+#SILVER = ROOT / 'data' / 'silver'
+```
+
+```{python}
+BRONZE = 'data/bronze'
+SILVER = 'data/silver'
 ```
 
 ## R
@@ -171,8 +188,23 @@ df_price_list_polars = pl.read_parquet(f"{SILVER}/parquet_export/price_list.parq
 In [Creating views using DuckDB](duckdb.qmd), we already showed how to create a DuckDB database and read in parquet data in duckdb. Therefore we will connect here to the already created database with soley the patient_timeline and price_list table available.
 ```{python}
 # connect to the database
-con_duckdb = duckdb.connect(f"{SILVER}/pregnancy.duckdb")
+con_duckdb = duckdb.connect()
 
+con_duckdb.sql(
+    f"""
+    CREATE TABLE patient_timeline AS
+    SELECT *
+    FROM read_parquet('{SILVER}/parquet_export/patient_timeline.parquet');
+    """
+)
+
+con_duckdb.sql(
+    f"""
+    CREATE TABLE price_list AS
+    SELECT *
+    FROM read_parquet('{SILVER}/parquet_export/price_list.parquet');
+    """
+)
 ```
 
 
@@ -180,11 +212,9 @@ con_duckdb = duckdb.connect(f"{SILVER}/pregnancy.duckdb")
 
 **TODO** Show that this is also possible directly on parquet files
 ```{python}
-# connect to duckdb using ibis
-con_ibis = ibis.duckdb.connect(f"{SILVER}/pregnancy.duckdb")
-#retrieve data
-df_timeline_IBIS = con_ibis.table("patient_timeline")
-df_price_list_ibis = con_ibis.table("price_list")
+# read parquet files with ibis
+df_timeline_IBIS = ibis.read_parquet(f'{SILVER}/parquet_export/patient_timeline.parquet')
+df_price_list_ibis = ibis.read_parquet(f'{SILVER}/parquet_export/price_list.parquet')
 ```
 
 ## pyspark
@@ -391,8 +421,8 @@ con_duckdb.sql(query).to_df()
 ## IBIS
 
 ```{python}
-df_filtered_ibis = df_timeline_IBIS.filter(df_timeline_IBIS.procedure_name == "Well child visit (procedure)").to_pandas()
-df_filtered_ibis.head()
+df_filtered_ibis = df_timeline_IBIS.filter(df_timeline_IBIS.procedure_name == "Well child visit (procedure)")
+df_filtered_ibis.to_pandas().head()
 
 ```
 
@@ -442,7 +472,9 @@ df_filtered_pandas[['patient_id','birthDate','organization_name']].head(1)
 
 ## polars
 ```{python}
-
+df_filtered_polars.select([
+    pl.col("patient_id"), pl.col("birthDate"), pl.col("organization_name")
+]).head()
 ```
 
 ## SQL
@@ -461,8 +493,9 @@ con_duckdb.sql(query).to_df()
 ## IBIS
 
 ```{python}
-
-
+df_filtered_ibis.select(
+    'patient_id','birthDate','organization_name'
+).to_pandas().head()
 ```
 
 

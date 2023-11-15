@@ -1,6 +1,11 @@
 /.quarto/
 /docs/
 .DS_Store
+.vscode
+.Rhistory
+*.Rproj
+.Rproj.user/
 *.duckdb
 /docs/
 /data/bronze/parquet/*
+development/
