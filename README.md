@@ -3,22 +3,22 @@
 ## Installation
 To be able to run all the code in this handbook, you will need to install and run the following. 
 
-**Clone this repo**
+**Clone this repo**  
 
-**Install quarto**
-We assume you will be using vs code to run this notebook. 
+**Install quarto**  
+We assume you will be using [Visual Studio Code](https://code.visualstudio.com/) to run this notebook. 
 First you need to install quarto
 1. Navigate to https://quarto.org/docs/get-started/ and install quarto following the instructions on the webpage.
 2. After installation, in vs code, open the market place (extensions) in the left-hand menu and search for Quarto.
 3. Unstall and enable the Quarto extension for vs-code
 4. When you now open a quarto document, you should see a *preview* button in the right corner of the editor.
 
-**install java**
+**install java**  
 Java is required to run the synthea generator and to use the pyspark library.
 The version and distribution depends on your laptop, but can be found on [this webpage](https://www.oracle.com/nl/java/technologies/javase/jdk11-archive-downloads.html).
 Note that a version higher than Java JDK 11 is required to be able to run the synthea patient generator.
 
-**Install the environment**
+**Install the environment**  
 As we are using a python and r environment together, we recommend you to install anaconda to make sure you have the right python and r distribution. 
 1. If you dont have anaconda installed yet install it from [anaconda](https://www.anaconda.com/download)
 1. Open the terminal of vs code
