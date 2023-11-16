@@ -15,8 +15,8 @@ First you need to install quarto
 
 **install java**  
 Java is required to run the synthea generator and to use the pyspark library.
-The version and distribution depends on your laptop, but can be found on [this webpage](https://www.oracle.com/nl/java/technologies/javase/jdk11-archive-downloads.html).
-Note that a version higher than Java JDK 11 is required to be able to run the synthea patient generator.
+The version and distribution depends on your laptop, but can be found on [this webpage](https://www.oracle.com/java/technologies/downloads/#jdk17-mac).
+Note that a version of Java JDK 11 or 17 is required to be able to run the synthea patient generator. (I used Java JDK 11)
 
 **Install the environment**  
 As we are using a python and r environment together, we recommend you to install anaconda to make sure you have the right python and r distribution. 
@@ -24,11 +24,12 @@ As we are using a python and r environment together, we recommend you to install
 1. Open the terminal of vs code
 2. A yml installation file of this project has been added in the main folder, named *analytics_handbook_env.yml*. 
 3. Open the vs code terminal and run the following code to create the anaconda environment: 
+
 ```
 conda env create -f analytics_handbook_env.yml
 ```
 4. To activate the environment run: ```conda activate HDC-handbook-r-python```
-5. Set the python interpreter (ctr/cmnd + shift + p, or navigate to settings >> command pallette..) and click on Python: select interpreter. Now select the environment you just installed. Note: for the environment to become visible in the list, it might be required to restart vs code.
+5. Set the python interpreter (ctr/cmnd + shift + p, or navigate to settings >> command pallette..) and click on *Python: select interpreter*. Now select the environment you just installed. Note: for the environment to become visible in the list, it might be required to restart vs code.
 6. Now first run a single code cell in any of the documents, this will ask you to install a kerner for your environment. Click install.
 7. Now all is set, to run the entire handbook, click on the preview button in any of the qmd files.
 
