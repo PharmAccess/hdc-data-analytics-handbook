@@ -110,35 +110,11 @@ library(knitr)
 
 In this section we will retrieve the data from the parquet files created in [Creating views with DuckDB](duckdb.qmd).
 
-Using parquet files enables us to separate storage and compute. This provides us with the flexibility to (for example) scale out storage engine, or change our compute backend, without affecting the other.
-
-```{dot}
-graph storage_compute {
-    node [shape = box];
-    storage -- compute;
-}
-```
-
 First, we set the paths where the data is located
 
 :::{.panel-tabset}
 
 ## Python
-
-```{python}
-# set paths
-#from pathlib import Path
-
-# TODO: is there a better way?
-# path from which code is run
-# when running entire notebook, this is from the main folder, 
-# when running file locally, this is from the source folder
-#ROOT = Path('.')
-#if 'src' in str(ROOT.resolve()): # locally
-#    ROOT = '..' / ROOT # go one folder up
-#BRONZE = ROOT / 'data' / 'bronze'
-#SILVER = ROOT / 'data' / 'silver'
-```
 
 ```{python}
 BRONZE = 'data/bronze'
@@ -237,7 +213,7 @@ df_price_list_spark = spark.read.parquet(f'{SILVER}/parquet_export/price_list.pa
 %%R
 con <- dbConnect(
   duckdb::duckdb(),
-  dbdir = glue("{SILVER}/pregnancyR.duckdb"),
+  dbdir = glue("{SILVER}/pregnancy.duckdb"),
   read_only = TRUE
 )
 ```
@@ -451,7 +427,7 @@ df_filtered_pyspark[['patient_id','start_time','procedure_name']].limit(5).show(
 %%R
 df_filtered <- df %>%
   filter(procedure_name == "Well child visit (procedure)")
-head(df_filtered)
+kable(head(df_filtered))
 ```
 
 
@@ -586,7 +562,7 @@ df_timeline_spark.select('start_time','year').limit(3).show()
 %%R
 df_new_var <- df %>%
   mutate(start_year = year(as.Date(start_time, format = "%Y-%m-%d")))
-head(df_new_var)
+kable(head(df_new_var))
 ```
 
 
@@ -651,7 +627,7 @@ df_ordered_pyspark.limit(5).show()
 df_ordered <- df %>%
   mutate(start_time = as.Date(start_time), format = "%Y-%m-%d") %>%
   arrange(start_time)
-head(df_ordered)
+kable(head(df_ordered))
 ```
 
 
@@ -722,7 +698,7 @@ df_renamed_pyspark.head(1)
 %%R
 df_renamed <- df %>%
   rename(birth_date = birthDate)
-head(df_renamed)
+kable(head(df_renamed))
 ```
 
 :::
@@ -820,7 +796,7 @@ df_joined <- df %>%
     df_price_list,
     by = c("vaccine_code" = "code", "vaccine_code_system" = "system")
   )
-head(df_joined)
+kable(head(df_joined))
 ```
 
 :::

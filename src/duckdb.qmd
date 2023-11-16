@@ -75,7 +75,17 @@ connection_bronze.sql(f"select * from information_schema.tables").to_df()
 ```
 
 ### Export data to parquest files
-Since parquet files require less space then duckdb files. For many applications it is convenient to export the data in parquet format. 
+
+Using parquet files enables us to separate storage and compute. This provides us with the flexibility to (for example) scale out storage engine, or change our compute backend, without affecting the other.
+
+```{dot}
+graph storage_compute {
+    node [shape = box];
+    storage -- compute;
+}
+```
+
+In addition, parquet files require less space than duckdb files. 
 
 One can convert each table separately to a parquet file, which is shown below. 
 
