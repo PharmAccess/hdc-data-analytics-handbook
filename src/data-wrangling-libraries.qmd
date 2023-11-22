@@ -117,8 +117,12 @@ First, we set the paths where the data is located
 ## Python
 
 ```{python}
-BRONZE = 'data/bronze'
-SILVER = 'data/silver'
+from pathlib import Path
+ROOT = Path('.')
+if 'src' in str(ROOT.resolve()): # locally
+    ROOT = '..' / ROOT # go one folder up
+BRONZE = ROOT / 'data' / 'bronze'
+SILVER = ROOT / 'data' / 'silver'
 ```
 
 ## R
