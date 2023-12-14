@@ -17,22 +17,20 @@ jobs:
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      # - name: Set up Conda
-      #   uses: conda-incubator/setup-miniconda@v3
-      #   with:
-      #     conda-channels: anaconda, conda-forge
-      #     auto-activate-base: false
-      #     activate-environment: HDC-handbook-r-python
-      #     environment-file: analytics_handbook_env.yml
       - name: Set up Conda
-        uses: s-weigand/setup-conda@v1
-      - name: Conda Environment creation
-        run: |
-        conda create env -f analytics_handbook_env.yml
-        source activate HDC-handbook-r-python
-        pip install -e .
-        
-          
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          conda-channels: anaconda, conda-forge
+          auto-activate-base: false
+          activate-environment: HDC-handbook-r-python
+          environment-file: analytics_handbook_env.yml
+      # - name: Set up Conda
+      #   uses: s-weigand/setup-conda@v1
+      # - name: Conda Environment creation
+      #   run: conda env create -f analytics_handbook_env.yml 
+      #   run: source activate HDC-handbook-r-python	
+      #   run: pip install -e .
+  
 
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
@@ -40,3 +38,5 @@ jobs:
           target: gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: conda activate HDC-handbook-r-python 
+        run: quarto render index.qmd
