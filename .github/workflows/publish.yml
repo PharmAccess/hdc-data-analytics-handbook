@@ -38,5 +38,6 @@ jobs:
           target: gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: conda activate HDC-handbook-r-python 
-        run: quarto render index.qmd
+        run: >
+          conda activate HDC-handbook-r-python \
+          quarto render index.qmd \
