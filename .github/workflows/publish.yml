@@ -21,9 +21,10 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           conda-channels: anaconda, conda-forge
+          auto-activate-base: false
           activate-environment: HDC-handbook-r-python
           environment-file: analytics_handbook_env.yml
-          auto-activate-base: false
+          
 
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
