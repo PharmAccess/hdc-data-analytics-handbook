@@ -18,7 +18,7 @@ jobs:
         uses: quarto-dev/quarto-actions/setup@v2
 
       - name: Set up Conda
-        uses: s-weigand/setup-conda@v1
+        uses: conda-incubator/setup-miniconda@v3
         with:
           conda-channels: anaconda, conda-forge
           activate-environment: HDC-handbook-r-python
