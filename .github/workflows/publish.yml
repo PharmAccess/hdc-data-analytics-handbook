@@ -31,13 +31,13 @@ jobs:
       #   run: source activate HDC-handbook-r-python	
       #   run: pip install -e .
   
-
+      - name: activate conda env
+        run: conda activate HDC-handbook-r-python	
+        
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
         with:
           target: gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >
-          conda activate HDC-handbook-r-python \
-          quarto render index.qmd \
+        
