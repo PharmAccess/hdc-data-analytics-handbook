@@ -29,9 +29,9 @@ As we are using a python and r environment together, we recommend you to install
 conda env create -f analytics_handbook_env.yml
 ```
 **NOTE**: If you have a mac and the arm64 version of anaconda installed, anaconda will automatically look into condaforge/osx-arm64 channel for packages, in which some packages like r-duckdb are not available. Therefore you need to specify too look in the conda-forge/osx-64 channel. To do so in the analytics_handbook_env.yml add /osx-64 after conda-forge in the channels.
-4. To activate the environment run: ```conda activate HDC-handbook-r-python```
-5. Set the python interpreter (ctr/cmnd + shift + p, or navigate to settings >> command pallette..) and click on *Python: select interpreter*. Now select the environment you just installed. Note: for the environment to become visible in the list, it might be required to restart vs code.
-6. Now first run a single code cell in any of the documents, this will ask you to install a kerner for your environment. Click install.
+4. To activate the environment run: ```conda activate HDC-handbook-r-python```  
+5. Set the python interpreter (ctr/cmnd + shift + p, or navigate to settings >> command pallette..) and click on *Python: select interpreter*. Now select the environment you just installed. **Note**: for the environment to become visible in the list, it might be required to restart vs code.   
+6. Now first run a single code cell in any of the documents, this will ask you to install a kerner for your environment. Click install.  
 7. Now all is set, to run the entire handbook, click on the preview button in any of the qmd files.
 
 
