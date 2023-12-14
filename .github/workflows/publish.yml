@@ -32,8 +32,8 @@ jobs:
       #   run: pip install -e .
   
       - name: activate conda env
-        run: conda activate HDC-handbook-r-python	
-        
+        run: source activate HDC-handbook-r-python	
+
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
         with:
