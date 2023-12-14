@@ -21,8 +21,9 @@ jobs:
         uses: s-weigand/setup-conda@v1
         with:
           conda-channels: anaconda, conda-forge
-      - run: conda env create -f analytics_handbook_env.yml
-      - run: conda activate HDC-handbook-r-python
+          activate-environment: HDC-handbook-r-python
+          environment-file: analytics_handbook_env.yml
+          auto-activate-base: false
 
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
