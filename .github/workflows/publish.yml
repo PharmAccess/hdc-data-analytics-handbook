@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
   push:
-    branches: main
+    branches: test
 
 name: Quarto Publish
 
@@ -17,13 +17,12 @@ jobs:
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Install Python and Dependencies
-        uses: actions/setup-python@v4
+      - name: Set up Conda
+        uses: s-weigand/setup-conda@v1
         with:
-          python-version: '3.10'
-          cache: 'pip'
-      - run: pip install jupyter
-      - run: pip install -r requirements.txt
+          conda-channels: anaconda, conda-forge
+      - run: conda env create -f analytics_handbook_env.yml
+      - run: conda activate HDC-handbook-r-python
 
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
