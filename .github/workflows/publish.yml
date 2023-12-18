@@ -17,15 +17,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Quarto
-        uses: quarto-dev/quarto-actions/setup@v2
-
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
           # conda-channels: anaconda, conda-forge
           # auto-activate-base: false
-          python-version: 3.10
           activate-environment: HDC-handbook-r-python
           environment-file: analytics_handbook_env.yml
       # - name: Set up Conda
@@ -46,7 +42,7 @@ jobs:
         run: |
           conda info
           quarto check jupyter
-      
+
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
