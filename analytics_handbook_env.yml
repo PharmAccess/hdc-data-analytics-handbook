@@ -25,4 +25,5 @@ dependencies:
       - pandas==2.0.0
       - polars==0.19.5
       - pyspark==3.5.0
+      - rpy2
 prefix: /Users/irisbokkes/opt/anaconda3/envs/HDC-handbook-r-python
