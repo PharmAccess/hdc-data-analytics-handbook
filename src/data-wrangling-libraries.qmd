@@ -5,30 +5,28 @@ In data analysis, we often repeat similar actions to get valuable information fr
 Many data analysis problems involve the application of a split-apply-combine strategy,
 where you break up a big problem into manageable pieces, operate on each piece independently and then put all the pieces back together. group_by is the  most common function name for split-apply-combine technique.
 
-These actions can be done with any library, in multiple programming languages. 
-Based on the sample data created in [Synthea patient generator](synthea.qmd) and [Create views using DuckDB](duckdb.qmd), we will go through some standard data analysis actions. 
-We will show how to apply these actions in multiple libraries and languages. 
+These actions can be performed using different libraries in various programming languages. Based on the sample data created with the [Synthea patient generator](synthea.qmd) and [Create views using DuckDB](duckdb.qmd), we will demonstrate standard data analysis actions. We will illustrate how to implement these actions across multiple libraries and languages.
 
 ## Datawrangling languages and libraries
 In this chapter we use the following languages and libraries:
 
 **Pandas 2.0**  
-[Pandas]() is a popular python data wrangling library in the data science comunity. Pandas 2.0 mainly introduces improvements in performance, making it faster and more memory-efficient. 
+[Pandas](https://pandas.pydata.org/) is a popular python data wrangling library in the data science comunity. Pandas 2.0 mainly introduces improvements in performance, making it faster and more memory-efficient. 
 
 **Polars**  
-Polars is very similar to pandas in terms of functionality. However, polars is based on Rust, which makes it highly performant.
+[Polars](https://pola.rs/) is very similar to pandas in terms of functionality. However, polars is based on Rust, which makes it highly performant.
 
 **IBIS**  
-Ibis is a python library which enables you to write your code in a pandas-like way, and the translates it to a lot of different backends. This enables you to change backends with only minor adjustments to your data wrangling code.
+[Ibis](https://ibis-project.org/) is a python library which enables you to write your code in a pandas-like way, and the translates it to a lot of different backends. This enables you to change backends with only minor adjustments to your data wrangling code.
 
 **PySpark**
-[PySpark]() is a python library for Apache Spark, an open source computing system. It enables you to work with large datasets, or run complex calculations. 
+[PySpark](https://spark.apache.org/docs/latest/api/python/index.html) is a python library for Apache Spark, an open source computing system. It enables you to work with large datasets, or run complex calculations. 
 
 **dplyr**  
-dplyr is a widely used library in r.
+[dplyr](https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html) is a widely used library in r.
 
 **SQL - DuckDB**  
-In this handbook we use DuckDB to show how to perform datawrangling with SQL. DuckDB SQL is almost the same as plane SQL but has a couple of extra functions to handle nested data and a couple of functions that help with data analysis. [DuckDB]() is **TODO**
+In this handbook, we use DuckDB to demonstrate how to perform data wrangling with SQL. DuckDB SQL is almost the same as plain SQL but has a couple of extra functions to handle nested data, along with a few functions that aid in data analysis. [DuckDB](https://duckdb.org/) is a fast and efficient open-source database for analyzing large datasets using SQL. 
 
 ## Overview data transformations in different libraries
 In the table below, you can find an overview of techniques that are often used in data analysis and the corresponding functions for them in the discussed libraries/languages.
@@ -145,6 +143,7 @@ SILVER <- file.path(ROOT, "data", "silver")
 ```
 
 :::
+
 Thereafter, we import the data in a dataframe
 
 ::: {.panel-tabset}
@@ -191,7 +190,6 @@ con_duckdb.sql(
 
 ## IBIS
 
-**TODO** Show that this is also possible directly on parquet files
 ```{python}
 # read parquet files with ibis
 df_timeline_IBIS = ibis.read_parquet(f'{SILVER}/parquet_export/patient_timeline.parquet')
@@ -354,7 +352,7 @@ kable(head(df_grouped))
 :::
 
 ### Filter
-In data analysis it also frequently occurs that you are interested in only a subset of the data. For that reason we apply the filter technique. From our patients we only want to keep the well child visits. 
+In data analysis, it is common to be interested in only a subset of the data. For this reason, we apply the filtering technique. From our patients we only want to keep the 'well child visits'. 
 
 ::: {.panel-tabset}
 ## pandas
@@ -494,8 +492,7 @@ df_filtered_pyspark.select('patient_id','birthDate','organization_name').limit(1
 :::
 
 ### Mutate
-Another common action, is that you want create adapt data. For example, we want to create another column with the year that a visit occured in the patient timeline, based on the start_time that is available. 
-We see that currently the date is in a specific timezone, you need to take this into account when converting it in a datatime format. For now we keep the date in the same timezone, before extracting the year from it.
+Another common action is the need to adapt data. For instance, we may want to create an additional column indicating the year of a visit in the patient timeline, based on the available start_time. Currently, the date is in a specific timezone, and it's important to consider this when converting it to a datetime format. For now, we maintain the date in the same timezone before extracting the year from it.
 
 
 ::: {.panel-tabset}
@@ -573,7 +570,8 @@ kable(head(df_new_var))
 :::
 
 ### Order
-It often occurs that you want to order your data. In this case let's order the patient timeline by start_time. Most libraries automatically order in an ascending/asc order: oldest first, and alow you to order descending/desc (newest first). 
+
+It often occurs that you want to order your data. In this case, let's arrange the patient timeline by start_time. Most libraries automatically order in ascending (oldest first) and allow you to order in descending (newest first).
 
 ::: {.panel-tabset}
 ## pandas
