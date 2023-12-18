@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
   push:
-    branches: test_
+    branches: main
 
 name: Quarto Publish
 
@@ -37,17 +37,10 @@ jobs:
         run: |
           conda info
           git config --global user.name "$GITHUB_USER_NAME"
-          git config --global user.name "iris@timformatie.nl"
           quarto check jupyter
           quarto publish gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_USER_NAME: ${{ github.actor }}
 
-      #- name: Render and Publish
-      #  uses: quarto-dev/quarto-actions/publish@v2
-      #  with:
-      #    target: gh-pages
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
