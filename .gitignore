@@ -1,5 +1,6 @@
 /.quarto/
 /docs/
+.idea/
 .DS_Store
 .vscode
 .Rhistory
