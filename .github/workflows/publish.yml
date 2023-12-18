@@ -8,6 +8,9 @@ name: Quarto Publish
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     permissions:
       contents: write
     steps:
@@ -31,12 +34,12 @@ jobs:
       #     conda env create -f analytics_handbook_env.yml 
       #     conda activate HDC-handbook-r-python	
           
-      - name: get conda info
-        shell: bash -l {0}
-        run: |
-          conda info
-          ls /usr/share/miniconda/envs/
-          conda activate HDC-handbook-r-python
+      # - name: get conda info
+      #  shell: bash -l {0}
+      #  run: |
+      #    conda info
+      #    ls /usr/share/miniconda/envs/
+      #    conda activate HDC-handbook-r-python
           
       # - name: activate conda env
       #   run: source activate /usr/share/miniconda/envs/HDC-handbook-r-python	
