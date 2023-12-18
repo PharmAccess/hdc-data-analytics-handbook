@@ -25,6 +25,7 @@ jobs:
         with:
           # conda-channels: anaconda, conda-forge
           # auto-activate-base: false
+          python-version: 3.10
           activate-environment: HDC-handbook-r-python
           environment-file: analytics_handbook_env.yml
       # - name: Set up Conda
@@ -33,17 +34,19 @@ jobs:
       #   run: |
       #     conda env create -f analytics_handbook_env.yml 
       #     conda activate HDC-handbook-r-python	
-          
-      - name: get conda info
-      #  shell: bash -l {0}
-        run: |
-          conda info
+
       #    ls /usr/share/miniconda/envs/
       #    conda activate HDC-handbook-r-python
           
       # - name: activate conda env
       #   run: source activate /usr/share/miniconda/envs/HDC-handbook-r-python	
 
+      - name: get conda info
+        #  shell: bash -l {0}
+        run: |
+          conda info
+          quarto check jupyter
+      
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
