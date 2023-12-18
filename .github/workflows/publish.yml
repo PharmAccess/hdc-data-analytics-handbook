@@ -32,7 +32,7 @@ jobs:
       #     conda activate HDC-handbook-r-python	
           
       - name: get conda info
-        shell: bash -l {0}
+        shell: bash 
         run: |
           conda info
           
@@ -45,11 +45,10 @@ jobs:
       #   run: source activate /usr/share/miniconda/envs/HDC-handbook-r-python	
 
       - name: Render and Publish
-        shell: bash -l {0}
-        run: |
-          uses: quarto-dev/quarto-actions/publish@v2
-          with:
-            target: gh-pages
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+        uses: quarto-dev/quarto-actions/publish@v2
+        with:
+          target: gh-pages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
