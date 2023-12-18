@@ -33,7 +33,7 @@ jobs:
           
   
       - name: activate conda env
-        run: source activate ${{ env.CONDA }}/envs/HDC-handbook-r-python	
+        run: conda activate HDC-handbook-r-python	
 
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
