@@ -46,9 +46,10 @@ jobs:
 
       - name: Render and Publish
         shell: bash -l {0}
-        uses: quarto-dev/quarto-actions/publish@v2
-        with:
-          target: gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          uses: quarto-dev/quarto-actions/publish@v2
+          with:
+            target: gh-pages
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
