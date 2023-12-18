@@ -32,11 +32,11 @@ jobs:
       #     conda activate HDC-handbook-r-python	
           
       - name: get conda info
-        shell: bash 
+        shell: bash -l {0}
         run: |
-          conda info  
+          conda info
           ls /usr/share/miniconda/envs/
-          source activate HDC-handbook-r-python
+          conda activate HDC-handbook-r-python
           
       # - name: activate conda env
       #   run: source activate /usr/share/miniconda/envs/HDC-handbook-r-python	
