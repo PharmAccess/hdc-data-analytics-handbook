@@ -21,7 +21,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           # conda-channels: anaconda, conda-forge
-          auto-activate-base: false
+          # auto-activate-base: false
           activate-environment: HDC-handbook-r-python
           environment-file: analytics_handbook_env.yml
       # - name: Set up Conda
