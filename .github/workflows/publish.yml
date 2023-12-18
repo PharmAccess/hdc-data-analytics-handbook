@@ -20,22 +20,9 @@ jobs:
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
-          # conda-channels: anaconda, conda-forge
-          # auto-activate-base: false
           activate-environment: HDC-handbook-r-python
           environment-file: analytics_handbook_env.yml
-      # - name: Set up Conda
-      #   uses: s-weigand/setup-conda@v1
-      # - name: Conda Environment creation
-      #   run: |
-      #     conda env create -f analytics_handbook_env.yml 
-      #     conda activate HDC-handbook-r-python	
-
-      #    ls /usr/share/miniconda/envs/
-      #    conda activate HDC-handbook-r-python
-          
-      # - name: activate conda env
-      #   run: source activate /usr/share/miniconda/envs/HDC-handbook-r-python
+    
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
@@ -43,10 +30,13 @@ jobs:
       - name: get conda info
         run: |
           conda info
+          git config --global user.name "$GITHUB_USER_NAME"
+          git config --global user.name "iris@timformatie.nl"
           quarto check jupyter
           quarto publish gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USER_NAME: ${{ github.actor }}
 
       #- name: Render and Publish
       #  uses: quarto-dev/quarto-actions/publish@v2
