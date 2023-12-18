@@ -11,6 +11,7 @@ dependencies:
   - r-duckdb=0.9.1_1
   - pip=23.3.1
   - r-glue=1.6.2
+  - r-here=1.0.1
   - r-knitr=1.45
   - r-lubridate=1.9.3
   - pip:
@@ -25,5 +26,4 @@ dependencies:
       - pandas==2.0.0
       - polars==0.19.5
       - pyspark==3.5.0
-      - rpy2
-prefix: /Users/irisbokkes/opt/anaconda3/envs/HDC-handbook-r-python
+      - rpy2==3.5.14
