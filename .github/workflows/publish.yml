@@ -34,10 +34,14 @@ jobs:
       - name: get conda info
         run: |
           conda info
-          ls /usr/share/miniconda/envs/
           
-      - name: activate conda env
-        run: source activate /usr/share/miniconda/envs/HDC-handbook-r-python	
+          ls /usr/share/miniconda/envs/
+          conda init
+          conda info
+          conda activate HDC-handbook-r-python
+          
+      # - name: activate conda env
+      #   run: source activate /usr/share/miniconda/envs/HDC-handbook-r-python	
 
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
