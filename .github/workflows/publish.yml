@@ -29,8 +29,8 @@ jobs:
       - name: Conda Environment creation
         run: |
           conda env create -f analytics_handbook_env.yml 
-          source activate HDC-handbook-r-python	
-          pip install -e .
+          conda activate HDC-handbook-r-python	
+          
   
       # - name: activate conda env
       #   run: source activate HDC-handbook-r-python	
