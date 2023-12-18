@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Data Analytics Handbook – duckdb</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../src/data-wrangling-libraries.html" rel="next">
+<link href="../src/synthea.html" rel="prev">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+<script src="https://unpkg.com/@jupyter-widgets/html-manager@*/dist/embed-amd.js" crossorigin="anonymous"></script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../src/duckdb.html">Create views using DuckDB</a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+      <a href="../index.html" class="sidebar-logo-link">
+      <img src="../logo-pharmaccess.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      <div class="sidebar-tools-main">
+    <a href="https://pharmaccess.org" rel="" title="https://pharmaccess.org" class="quarto-navigation-tool px-1" aria-label="https://pharmaccess.org"><i class="bi bi-globe"></i></a>
+    <a href="https://www.linkedin.com/company/pharm-access-foundation/" rel="" title="LinkedIn company page" class="quarto-navigation-tool px-1" aria-label="LinkedIn company page"><i class="bi bi-linkedin"></i></a>
+</div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../src/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../src/about.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../src/synthea.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Synthea synthetic patient data</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../src/duckdb.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Create views using DuckDB</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../src/data-wrangling-libraries.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Datawrangling</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#what-is-duckdb" id="toc-what-is-duckdb" class="nav-link active" data-scroll-target="#what-is-duckdb">What is duckDB?</a></li>
+  <li><a href="#installing-and-importing-data-in-duckdb" id="toc-installing-and-importing-data-in-duckdb" class="nav-link" data-scroll-target="#installing-and-importing-data-in-duckdb">Installing and importing data in duckDB</a>
+  <ul class="collapse">
+  <li><a href="#creating-and-connecting-to-duckdb-databases" id="toc-creating-and-connecting-to-duckdb-databases" class="nav-link" data-scroll-target="#creating-and-connecting-to-duckdb-databases">Creating and connecting to duckdb databases</a></li>
+  <li><a href="#set-up-duckdb-database-and-import-fhir-data" id="toc-set-up-duckdb-database-and-import-fhir-data" class="nav-link" data-scroll-target="#set-up-duckdb-database-and-import-fhir-data">SET up duckdb database and import fhir data</a></li>
+  <li><a href="#export-data-to-parquest-files" id="toc-export-data-to-parquest-files" class="nav-link" data-scroll-target="#export-data-to-parquest-files">Export data to parquest files</a></li>
+  <li><a href="#investigating-nested-structures" id="toc-investigating-nested-structures" class="nav-link" data-scroll-target="#investigating-nested-structures">Investigating Nested structures</a></li>
+  <li><a href="#create-flattened-tables-to-use-for-data-wrangling" id="toc-create-flattened-tables-to-use-for-data-wrangling" class="nav-link" data-scroll-target="#create-flattened-tables-to-use-for-data-wrangling">Create flattened tables to use for data wrangling</a></li>
+  <li><a href="#export-the-outcome-in-a-separate-duckdb-file" id="toc-export-the-outcome-in-a-separate-duckdb-file" class="nav-link" data-scroll-target="#export-the-outcome-in-a-separate-duckdb-file">Export the outcome in a separate duckdb file</a></li>
+  <li><a href="#export-results-in-parquet-files" id="toc-export-results-in-parquet-files" class="nav-link" data-scroll-target="#export-results-in-parquet-files">Export results in parquet files</a></li>
+  <li><a href="#close-the-database-connection" id="toc-close-the-database-connection" class="nav-link" data-scroll-target="#close-the-database-connection">Close the database connection</a></li>
+  </ul></li>
+  <li><a href="#sql-on-fhir" id="toc-sql-on-fhir" class="nav-link" data-scroll-target="#sql-on-fhir"><span class="header-section-number">1</span> SQL on FHIR</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/PharmAccess/hdc-data-analytics-handbook/edit/main/src/duckdb.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/PharmAccess/hdc-data-analytics-handbook/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Create views using DuckDB</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>The synthea generator generates fhir data in json format. The fhir data has a nested structure which can be challenging for analysis. For that reason we create a flattened view based on the different fhir resources, that can be used for further analysis. In this handbook we create a patient_timeline, including all procedures that a woman had in her pregnancy journey.</p>
+<section id="what-is-duckdb" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="what-is-duckdb">What is duckDB?</h2>
+<p>DuckDB is an open-source database known for its fast query processing. It supports SQl and nested datastructures like Fhir.</p>
+</section>
+<section id="installing-and-importing-data-in-duckdb" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="installing-and-importing-data-in-duckdb">Installing and importing data in duckDB</h2>
+<p>First install <a href="https://duckdb.org/docs/installation/index">DuckDB</a>.<br>
+Then import the library:</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> duckdb</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now we can import the fhir data in duckdb as follows:</p>
+<p>To use DuckDB, we first need to create a connection to a database. To do so we need to give a parameter that refers to a database (duckdb) file. If the file already exists,, duckdb connects to that file, if not a new file will be generated and connected to. The file extension can be anything, but usually .db or .duckdb are used.</p>
+<p><strong>side note:</strong> when working with schemas a duckdb file can become large rapidly. For that reason in this notebook two duckdb files were created: one in which all raw data and manipulations are stored and has multiple schemas and one in which only the outcome is stored, which will be much smaller in size.</p>
+<section id="creating-and-connecting-to-duckdb-databases" class="level3">
+<h3 class="anchored" data-anchor-id="creating-and-connecting-to-duckdb-databases">Creating and connecting to duckdb databases</h3>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># we setup a data storage schema following the Medallion structure</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># https://www.databricks.com/glossary/medallion-architecture#:~:text=A%20medallion%20architecture%20is%20a,Silver%20%E2%87%92%20Gold%20layer%20tables).</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># define where data is stored</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ROOT = Path(__file__).resolve().parent</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ROOT = quarto.project.root</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>ROOT <span class="op">=</span> Path(<span class="st">'.'</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">'src'</span> <span class="kw">in</span> <span class="bu">str</span>(ROOT.resolve()): <span class="co"># locally</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    ROOT <span class="op">=</span> <span class="st">'..'</span> <span class="op">/</span> ROOT <span class="co"># go one folder up</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>BRONZE <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">'data'</span> <span class="op">/</span> <span class="st">'bronze'</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>SILVER <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">'data'</span> <span class="op">/</span> <span class="st">'silver'</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>SYNTHEA_DUMP <span class="op">=</span> ROOT <span class="op">/</span><span class="st">'data'</span><span class="op">/</span><span class="st">'bronze'</span><span class="op">/</span><span class="st">'synthea'</span><span class="op">/</span><span class="st">'fhir'</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>connection_bronze <span class="op">=</span> duckdb.<span class="ex">connect</span>(<span class="ss">f"</span><span class="sc">{</span>BRONZE<span class="sc">}</span><span class="ss">/raw.duckdb"</span>)</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>connection_silver <span class="op">=</span> duckdb.<span class="ex">connect</span>(<span class="ss">f"</span><span class="sc">{</span>SILVER<span class="sc">}</span><span class="ss">/pregnancy.duckdb"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>we are now connected to our duckdb databases, and can run any SQL commands on them.</p>
+</section>
+<section id="set-up-duckdb-database-and-import-fhir-data" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="set-up-duckdb-database-and-import-fhir-data">SET up duckdb database and import fhir data</h3>
+<p>First, we can create a schema structure in the database, in this example we use a <a href="https://www.databricks.com/glossary/medallion-architecture#:~:text=A%20medallion%20architecture%20is%20a,Silver%20%E2%87%92%20Gold%20layer%20tables">medallion database structure</a> where the raw fhir data is stored in the BRONZE layer.</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>schema_list <span class="op">=</span> [<span class="st">'bronze'</span>,<span class="st">'silver'</span>,<span class="st">'gold'</span>]</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> schema <span class="kw">in</span> schema_list: </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    connection_bronze.sql(<span class="ss">f'create schema if not exists </span><span class="sc">{</span>schema<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now, we import the fhir data from the ndjson fhir resources into the duckdb database. DuckDB allows you to directly read the data from the ndjson files.</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>schema <span class="op">=</span> <span class="st">'bronze'</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># loop through the different resources, note that the numbers behind organization, practitioner, location, etc. will be different for each set of generated Synthea data.</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>resource_list <span class="op">=</span> [<span class="st">'DiagnosticReport'</span>,<span class="st">'Claim'</span>,<span class="st">'Provenance'</span>,<span class="st">'ExplanationOfBenefit'</span>,<span class="st">'DocumentReference'</span>,<span class="st">'Encounter'</span>,<span class="st">'Patient'</span>,<span class="st">'Organization.1693914717904'</span>,<span class="st">'Location.1693914717904'</span>,<span class="st">'Immunization'</span>,<span class="st">'Practitioner.1693914717904'</span>,<span class="st">'PractitionerRole.1693914717904'</span>]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> resource <span class="kw">in</span> resource_list:</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    resource_table_name <span class="op">=</span> resource.split(<span class="st">'.'</span>)[<span class="dv">0</span>] <span class="co"># get rid of number behind resource name</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    connection_bronze.sql(<span class="ss">f"create table if not exists </span><span class="sc">{</span>schema<span class="sc">}</span><span class="ss">.</span><span class="sc">{</span>resource_table_name<span class="sc">}</span><span class="ss"> as select * from '</span><span class="sc">{</span>SYNTHEA_DUMP<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>resource<span class="sc">}</span><span class="ss">.ndjson'"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>To check if all resources are present we can check the information_schema:</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#check if all resources are present</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(<span class="ss">f"select * from information_schema.tables"</span>).to_df()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">table_catalog</th>
+<th data-quarto-table-cell-role="th">table_schema</th>
+<th data-quarto-table-cell-role="th">table_name</th>
+<th data-quarto-table-cell-role="th">table_type</th>
+<th data-quarto-table-cell-role="th">self_referencing_column_name</th>
+<th data-quarto-table-cell-role="th">reference_generation</th>
+<th data-quarto-table-cell-role="th">user_defined_type_catalog</th>
+<th data-quarto-table-cell-role="th">user_defined_type_schema</th>
+<th data-quarto-table-cell-role="th">user_defined_type_name</th>
+<th data-quarto-table-cell-role="th">is_insertable_into</th>
+<th data-quarto-table-cell-role="th">is_typed</th>
+<th data-quarto-table-cell-role="th">commit_action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>raw</td>
+<td>bronze</td>
+<td>DiagnosticReport</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>raw</td>
+<td>bronze</td>
+<td>Claim</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>raw</td>
+<td>bronze</td>
+<td>Provenance</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>raw</td>
+<td>bronze</td>
+<td>ExplanationOfBenefit</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>raw</td>
+<td>bronze</td>
+<td>DocumentReference</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">5</td>
+<td>raw</td>
+<td>bronze</td>
+<td>Encounter</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">6</td>
+<td>raw</td>
+<td>bronze</td>
+<td>Patient</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">7</td>
+<td>raw</td>
+<td>bronze</td>
+<td>Organization</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">8</td>
+<td>raw</td>
+<td>bronze</td>
+<td>Location</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">9</td>
+<td>raw</td>
+<td>bronze</td>
+<td>Immunization</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">10</td>
+<td>raw</td>
+<td>bronze</td>
+<td>Practitioner</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">11</td>
+<td>raw</td>
+<td>bronze</td>
+<td>PractitionerRole</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">12</td>
+<td>raw</td>
+<td>silver</td>
+<td>price_list</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">13</td>
+<td>raw</td>
+<td>silver</td>
+<td>patient_timeline</td>
+<td>BASE TABLE</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>YES</td>
+<td>NO</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="export-data-to-parquest-files" class="level3">
+<h3 class="anchored" data-anchor-id="export-data-to-parquest-files">Export data to parquest files</h3>
+<p>Using parquet files enables us to separate storage and compute. This provides us with the flexibility to (for example) scale out storage engine, or change our compute backend, without affecting the other.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<div>
+<svg width="672" height="480" viewbox="0.00 0.00 72.21 116.00" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" style="; max-width: none; max-height: none">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 112)">
+<title>
+storage_compute
+</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-112 68.21,-112 68.21,4 -4,4"></polygon> <!-- storage --> <g id="node1" class="node">
+<title>
+storage
+</title>
+<polygon fill="none" stroke="black" points="60.53,-108 3.67,-108 3.67,-72 60.53,-72 60.53,-108"></polygon> <text text-anchor="middle" x="32.1" y="-85.8" font-family="Times,serif" font-size="14.00">storage</text> </g> <!-- compute --> <g id="node2" class="node">
+<title>
+compute
+</title>
+<polygon fill="none" stroke="black" points="64.31,-36 -0.1,-36 -0.1,0 64.31,0 64.31,-36"></polygon> <text text-anchor="middle" x="32.1" y="-13.8" font-family="Times,serif" font-size="14.00">compute</text> </g> <!-- storage&#45;&#45;compute --> <g id="edge1" class="edge">
+<title>
+storage–compute
+</title>
+<path fill="none" stroke="black" d="M32.1,-71.7C32.1,-60.85 32.1,-46.92 32.1,-36.1"></path> </g> </g>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<p>In addition, parquet files require less space than duckdb files.</p>
+<p>One can convert each table separately to a parquet file, which is shown below.</p>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>resource_list <span class="op">=</span> [<span class="st">'DiagnosticReport'</span>,<span class="st">'Claim'</span>,<span class="st">'Provenance'</span>,<span class="st">'ExplanationOfBenefit'</span>,<span class="st">'DocumentReference'</span>,<span class="st">'Encounter'</span>,<span class="st">'Patient'</span>,<span class="st">'Organization'</span>,<span class="st">'Location'</span>,<span class="st">'Immunization'</span>,<span class="st">'Practitioner'</span>,<span class="st">'PractitionerRole'</span>]</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">#check if all resources are present</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> resource <span class="kw">in</span> resource_list: </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    connection_bronze.sql(<span class="ss">f"COPY bronze.</span><span class="sc">{</span>resource<span class="sc">}</span><span class="ss"> TO '</span><span class="sc">{</span>BRONZE<span class="sc">}</span><span class="ss">/parquet/</span><span class="sc">{</span>resource<span class="sc">}</span><span class="ss">.parquet' (FORMAT PARQUET)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>It is also possible to do a database export in parquet format. a load.sql and schema.sql file are then also available, to make it easy to import the data at once in duckdb.</p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(<span class="ss">f"EXPORT DATABASE '</span><span class="sc">{</span>BRONZE<span class="sc">}</span><span class="ss">/parquet_export' (FORMAT PARQUET);"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>It can be observed that the size of the parquet files (16.5 MB) is smaller than the size of the duckdb file (18.5 MB). Both duckdb and parquet file formats are significantly smaller in size than the ndjson files, which take up 146.5 MB in total.</p>
+</section>
+<section id="investigating-nested-structures" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="investigating-nested-structures">Investigating Nested structures</h3>
+<p>Fhir data has a nested structure. This can be observed by looking at the Claim data as an example:</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(<span class="st">'select * from bronze.Claim limit 1'</span>).to_df()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">resourceType</th>
+<th data-quarto-table-cell-role="th">id</th>
+<th data-quarto-table-cell-role="th">status</th>
+<th data-quarto-table-cell-role="th">type</th>
+<th data-quarto-table-cell-role="th">use</th>
+<th data-quarto-table-cell-role="th">patient</th>
+<th data-quarto-table-cell-role="th">billablePeriod</th>
+<th data-quarto-table-cell-role="th">created</th>
+<th data-quarto-table-cell-role="th">provider</th>
+<th data-quarto-table-cell-role="th">priority</th>
+<th data-quarto-table-cell-role="th">facility</th>
+<th data-quarto-table-cell-role="th">supportingInfo</th>
+<th data-quarto-table-cell-role="th">insurance</th>
+<th data-quarto-table-cell-role="th">item</th>
+<th data-quarto-table-cell-role="th">total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>Claim</td>
+<td>105a1262-aef1-422c-837e-b12b907dfeac</td>
+<td>active</td>
+<td>{'coding': [{'system': 'http://terminology.hl7...</td>
+<td>claim</td>
+<td>{'reference': 'Patient/884c04fc-2b31-c9c0-51b8...</td>
+<td>{'start': '2014-05-25T13:57:31+02:00', 'end': ...</td>
+<td>2014-05-25T14:12:31+02:00</td>
+<td>{'reference': 'Organization?identifier=https:/...</td>
+<td>{'coding': [{'system': 'http://terminology.hl7...</td>
+<td>{'reference': 'Location?identifier=https://git...</td>
+<td>[{'sequence': 1, 'category': {'coding': [{'sys...</td>
+<td>[{'sequence': 1, 'focal': True, 'coverage': {'...</td>
+<td>[{'sequence': 1, 'productOrService': {'coding'...</td>
+<td>{'value': 272.8, 'currency': 'USD'}</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Let’s obsere the data in item</p>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(<span class="st">'select * from bronze.Claim limit 1'</span>).to_df()[<span class="st">'item'</span>][<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<pre><code>[{'sequence': 1,
+  'productOrService': {'coding': [{'system': 'http://snomed.info/sct',
+     'code': '410620009',
+     'display': 'Well child visit (procedure)'}],
+   'text': 'Well child visit (procedure)'},
+  'encounter': [{'reference': 'Encounter/a6b75b4c-0cfa-f85e-a317-33420c73b34b'}],
+  'informationSequence': None,
+  'net': None},
+ {'sequence': 2,
+  'productOrService': {'coding': [{'system': 'http://hl7.org/fhir/sid/cvx',
+     'code': '140',
+     'display': 'Influenza, seasonal, injectable, preservative free'}],
+   'text': 'Influenza, seasonal, injectable, preservative free'},
+  'encounter': None,
+  'informationSequence': [1],
+  'net': {'value': 136.0, 'currency': 'USD'}}]</code></pre>
+</div>
+</div>
+<p>It can be observed that an item is a list of procedures/products with a price. Within one list item under the productOrService, we can find another list in which the coding is specified.</p>
+<p>To deal with this nested structure, the unnest() and struct_extract() functions are frequently used.</p>
+<p>Let’s try to create a list of the claims where each productOrService of a claim is on a new line. To do so, a cross join can be used to merge the results with the original table.</p>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> <span class="st">'''</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="st">Select </span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="st">c.patient.reference, </span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="st">struct_extract(i,'productOrService') as productOrService</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="st">from bronze.Claim c</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="st">cross join (SELECT UNNEST(item)i)</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="st">'''</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(query).to_df()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">reference</th>
+<th data-quarto-table-cell-role="th">productOrService</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>Patient/884c04fc-2b31-c9c0-51b8-3909e34ee92f</td>
+<td>{'coding': [{'system': 'http://snomed.info/sct...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>Patient/884c04fc-2b31-c9c0-51b8-3909e34ee92f</td>
+<td>{'coding': [{'system': 'http://hl7.org/fhir/si...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>Patient/71d269a3-d04c-727d-c5bc-aaaff28e16b4</td>
+<td>{'coding': [{'system': 'http://snomed.info/sct...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>Patient/71d269a3-d04c-727d-c5bc-aaaff28e16b4</td>
+<td>{'coding': [{'system': 'http://hl7.org/fhir/si...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>Patient/f9133ee8-f952-0e7d-f642-99d84fc9c6ad</td>
+<td>{'coding': [{'system': 'http://snomed.info/sct...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">22662</td>
+<td>Patient/f7a1f5c2-825b-8c93-82f0-16cc44e19fdd</td>
+<td>{'coding': [{'system': 'http://hl7.org/fhir/si...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">22663</td>
+<td>Patient/f7a1f5c2-825b-8c93-82f0-16cc44e19fdd</td>
+<td>{'coding': [{'system': 'http://snomed.info/sct...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">22664</td>
+<td>Patient/f7a1f5c2-825b-8c93-82f0-16cc44e19fdd</td>
+<td>{'coding': [{'system': 'http://hl7.org/fhir/si...</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">22665</td>
+<td>Patient/f7a1f5c2-825b-8c93-82f0-16cc44e19fdd</td>
+<td>{'coding': [{'system': 'http://snomed.info/sct...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">22666</td>
+<td>Patient/f7a1f5c2-825b-8c93-82f0-16cc44e19fdd</td>
+<td>{'coding': [{'system': 'http://hl7.org/fhir/si...</td>
+</tr>
+</tbody>
+</table>
+
+<p>22667 rows × 2 columns</p>
+</div>
+</div>
+</div>
+</section>
+<section id="create-flattened-tables-to-use-for-data-wrangling" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="create-flattened-tables-to-use-for-data-wrangling">Create flattened tables to use for data wrangling</h3>
+<p>First, let’s create a pricelist from the claims data</p>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span> <span class="st">'''</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="st">create table if not exists silver.price_list as(</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="st">        Select </span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="st">        distinct</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="st">        struct_extract(codes,'code') as code,</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="st">        case</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="st">            when struct_extract(codes,'system') like '</span><span class="sc">%s</span><span class="st">nomed%' then 'SNOMED'</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="st">            when struct_extract(codes,'system') like '</span><span class="sc">%c</span><span class="st">vx%' then 'CVX'</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="st">            else NULL </span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="st">        end as system,</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="st">        struct_extract(codes,'display') as item_claimed,</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="st">        struct_extract(struct_extract(i,'net'),'value') as USD</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="st">        from </span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="st">        bronze.Claim c</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="st">        cross join (SELECT unnest(item) i)</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="st">        cross join (SELECT unnest(struct_extract(struct_extract(i,'productOrService'),'coding')) codes)</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a><span class="st">    );</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a><span class="st">Select * from silver.price_list limit 5</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="st">'''</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(query).to_df()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">code</th>
+<th data-quarto-table-cell-role="th">system</th>
+<th data-quarto-table-cell-role="th">item_claimed</th>
+<th data-quarto-table-cell-role="th">USD</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>119</td>
+<td>CVX</td>
+<td>rotavirus, monovalent</td>
+<td>136.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>62</td>
+<td>CVX</td>
+<td>HPV, quadrivalent</td>
+<td>136.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>140</td>
+<td>CVX</td>
+<td>Influenza, seasonal, injectable, preservative ...</td>
+<td>136.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>43</td>
+<td>CVX</td>
+<td>Hep B, adult</td>
+<td>136.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>207</td>
+<td>CVX</td>
+<td>SARS-COV-2 (COVID-19) vaccine, mRNA, spike pro...</td>
+<td>136.0</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>We also want to create a table that contains all encounters of the patient, information about the patient, and all vaccinations the patient required in one table.</p>
+<div class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>query <span class="op">=</span><span class="st">'''</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="st">create or replace table silver.patient_timeline as(</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="st">    with patient_info as(</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="st">        Select </span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="st">            cast(p.id as string) as patient_id, -- both pandas and byspark dont allow the UUID type (FIXED_BYTE_LEN_ARRAY in parquet)therefore the UUID is converted into string</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(i,'value') as social_security_number,</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(n,'prefix')[1] as prefix,</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(n,'given')[1] as first_name,</span></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(n,'family') as last_name,</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="st">            p.birthDate</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="st">        from bronze.Patient p</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="st">        cross join (SELECT unnest(p.identifier) i)</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="st">        cross join (SELECT unnest(p.name) n)</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="st">        where struct_extract(n,'use') = 'official'</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="st">        and struct_extract(i,'system') = 'http://hl7.org/fhir/sid/us-ssn'</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="st">    ),</span></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="st">    encounter_info as(</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="st">        Select </span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a><span class="st">            e.id as encounter_id,</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(c,'code') as code,</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="st">            'SNOMED' as system,</span></span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(c,'display') as procedure_name,</span></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a><span class="st">            str_split(e.subject.reference,'/')[2] as patient_id,</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a><span class="st">            str_split(e.serviceProvider.reference,'synthea|')[-1] as organization_id,</span></span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a><span class="st">            e.serviceProvider.display as organization_name,</span></span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(struct_extract(p,'individual'),'display') as practitioner_name,</span></span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a><span class="st">            str_split(struct_extract(struct_extract(p,'individual'),'reference'),'us-npi|')[-1] as practitioner_id,</span></span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a><span class="st">            e.period.start as start_time,</span></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="st">            e.period.end as end_time    </span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a><span class="st">        from bronze.encounter e</span></span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a><span class="st">        cross join (SELECT unnest(e.type) t)</span></span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a><span class="st">        cross join (SELECT unnest(t.coding) c)</span></span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a><span class="st">        cross join (SELECT unnest(e.participant) p)</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a><span class="st">        where struct_extract(c,'system') = 'http://snomed.info/sct'</span></span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a><span class="st">    ),</span></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a><span class="st">    immunization_info as(</span></span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a><span class="st">        Select </span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a><span class="st">            i.id as immunization_id,</span></span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a><span class="st">            i.vaccineCode.text as Vaccine_name,</span></span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(vc,'code') as code,</span></span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a><span class="st">            'CVX' as system,</span></span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a><span class="st">            str_split(i.patient.reference,'/')[2] as patient_id,</span></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a><span class="st">            str_split(i.encounter.reference,'/')[2] as encounter_id</span></span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a><span class="st">        from </span></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a><span class="st">        bronze.Immunization i</span></span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a><span class="st">        cross join (SELECT unnest(vaccineCode.coding) vc)</span></span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a><span class="st">        where struct_extract(vc,'system') = 'http://hl7.org/fhir/sid/cvx'</span></span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a><span class="st">    ),</span></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a><span class="st">    price_list as (</span></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a><span class="st">        Select </span></span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a><span class="st">            distinct</span></span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(codes,'code') as code,</span></span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a><span class="st">            case</span></span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a><span class="st">                when struct_extract(codes,'system') like '</span><span class="sc">%s</span><span class="st">nomed%' then 'SNOMED'</span></span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a><span class="st">                when struct_extract(codes,'system') like '</span><span class="sc">%c</span><span class="st">vx%' then 'CVX'</span></span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a><span class="st">                else NULL </span></span>
+<span id="cb13-57"><a href="#cb13-57" aria-hidden="true" tabindex="-1"></a><span class="st">            end as system,</span></span>
+<span id="cb13-58"><a href="#cb13-58" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(codes,'display') as item_claimed,</span></span>
+<span id="cb13-59"><a href="#cb13-59" aria-hidden="true" tabindex="-1"></a><span class="st">            struct_extract(struct_extract(i,'net'),'value') as USD</span></span>
+<span id="cb13-60"><a href="#cb13-60" aria-hidden="true" tabindex="-1"></a><span class="st">        from </span></span>
+<span id="cb13-61"><a href="#cb13-61" aria-hidden="true" tabindex="-1"></a><span class="st">        bronze.Claim c</span></span>
+<span id="cb13-62"><a href="#cb13-62" aria-hidden="true" tabindex="-1"></a><span class="st">        cross join (SELECT unnest(item) i)</span></span>
+<span id="cb13-63"><a href="#cb13-63" aria-hidden="true" tabindex="-1"></a><span class="st">        cross join (SELECT unnest(struct_extract(struct_extract(i,'productOrService'),'coding')) codes)</span></span>
+<span id="cb13-64"><a href="#cb13-64" aria-hidden="true" tabindex="-1"></a><span class="st">    )</span></span>
+<span id="cb13-65"><a href="#cb13-65" aria-hidden="true" tabindex="-1"></a><span class="st">    Select </span></span>
+<span id="cb13-66"><a href="#cb13-66" aria-hidden="true" tabindex="-1"></a><span class="st">    p.*,</span></span>
+<span id="cb13-67"><a href="#cb13-67" aria-hidden="true" tabindex="-1"></a><span class="st">    e.code,</span></span>
+<span id="cb13-68"><a href="#cb13-68" aria-hidden="true" tabindex="-1"></a><span class="st">    e.system,</span></span>
+<span id="cb13-69"><a href="#cb13-69" aria-hidden="true" tabindex="-1"></a><span class="st">    e.organization_id,</span></span>
+<span id="cb13-70"><a href="#cb13-70" aria-hidden="true" tabindex="-1"></a><span class="st">    e.organization_name,</span></span>
+<span id="cb13-71"><a href="#cb13-71" aria-hidden="true" tabindex="-1"></a><span class="st">    e.practitioner_name,</span></span>
+<span id="cb13-72"><a href="#cb13-72" aria-hidden="true" tabindex="-1"></a><span class="st">    e.practitioner_id,</span></span>
+<span id="cb13-73"><a href="#cb13-73" aria-hidden="true" tabindex="-1"></a><span class="st">    e.procedure_name,</span></span>
+<span id="cb13-74"><a href="#cb13-74" aria-hidden="true" tabindex="-1"></a><span class="st">    e.start_time,</span></span>
+<span id="cb13-75"><a href="#cb13-75" aria-hidden="true" tabindex="-1"></a><span class="st">    e.end_time,</span></span>
+<span id="cb13-76"><a href="#cb13-76" aria-hidden="true" tabindex="-1"></a><span class="st">    i.vaccine_name,</span></span>
+<span id="cb13-77"><a href="#cb13-77" aria-hidden="true" tabindex="-1"></a><span class="st">    i.code as vaccine_code,</span></span>
+<span id="cb13-78"><a href="#cb13-78" aria-hidden="true" tabindex="-1"></a><span class="st">    i.system as vaccine_code_system</span></span>
+<span id="cb13-79"><a href="#cb13-79" aria-hidden="true" tabindex="-1"></a><span class="st">    from patient_info p</span></span>
+<span id="cb13-80"><a href="#cb13-80" aria-hidden="true" tabindex="-1"></a><span class="st">    join encounter_info e on p.patient_id = e.patient_id</span></span>
+<span id="cb13-81"><a href="#cb13-81" aria-hidden="true" tabindex="-1"></a><span class="st">    left join immunization_info i on i.encounter_id = e.encounter_id and e.patient_id = p.patient_id</span></span>
+<span id="cb13-82"><a href="#cb13-82" aria-hidden="true" tabindex="-1"></a><span class="st">);</span></span>
+<span id="cb13-83"><a href="#cb13-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-84"><a href="#cb13-84" aria-hidden="true" tabindex="-1"></a><span class="st">select * from silver.patient_timeline limit 5</span></span>
+<span id="cb13-85"><a href="#cb13-85" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb13-86"><a href="#cb13-86" aria-hidden="true" tabindex="-1"></a><span class="st">'''</span></span>
+<span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(query).to_df()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<script type="application/vnd.jupyter.widget-view+json">
+{"model_id":"262d20ebd4dc4ce7b4bae3b7d3322dd4","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+</script>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="12">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">patient_id</th>
+<th data-quarto-table-cell-role="th">social_security_number</th>
+<th data-quarto-table-cell-role="th">prefix</th>
+<th data-quarto-table-cell-role="th">first_name</th>
+<th data-quarto-table-cell-role="th">last_name</th>
+<th data-quarto-table-cell-role="th">birthDate</th>
+<th data-quarto-table-cell-role="th">code</th>
+<th data-quarto-table-cell-role="th">system</th>
+<th data-quarto-table-cell-role="th">organization_id</th>
+<th data-quarto-table-cell-role="th">organization_name</th>
+<th data-quarto-table-cell-role="th">practitioner_name</th>
+<th data-quarto-table-cell-role="th">practitioner_id</th>
+<th data-quarto-table-cell-role="th">procedure_name</th>
+<th data-quarto-table-cell-role="th">start_time</th>
+<th data-quarto-table-cell-role="th">end_time</th>
+<th data-quarto-table-cell-role="th">Vaccine_name</th>
+<th data-quarto-table-cell-role="th">vaccine_code</th>
+<th data-quarto-table-cell-role="th">vaccine_code_system</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>4fc244f3-2c0e-4017-d64d-c2c4cd03655f</td>
+<td>999-53-5813</td>
+<td>Mrs.</td>
+<td>Alyce744</td>
+<td>Bergstrom287</td>
+<td>1965-01-07</td>
+<td>162673000</td>
+<td>SNOMED</td>
+<td>b03b624d-c939-3688-986d-9555b8009a3b</td>
+<td>HOLYOKE HEALTH CENTER INC</td>
+<td>Dr. Bennett146 Hartmann983</td>
+<td>9999981894</td>
+<td>General examination of patient (procedure)</td>
+<td>2015-01-08T07:11:47+01:00</td>
+<td>2015-01-08T07:26:47+01:00</td>
+<td>zoster vaccine, live</td>
+<td>121</td>
+<td>CVX</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>4fc244f3-2c0e-4017-d64d-c2c4cd03655f</td>
+<td>999-53-5813</td>
+<td>Mrs.</td>
+<td>Alyce744</td>
+<td>Bergstrom287</td>
+<td>1965-01-07</td>
+<td>162673000</td>
+<td>SNOMED</td>
+<td>b03b624d-c939-3688-986d-9555b8009a3b</td>
+<td>HOLYOKE HEALTH CENTER INC</td>
+<td>Dr. Bennett146 Hartmann983</td>
+<td>9999981894</td>
+<td>General examination of patient (procedure)</td>
+<td>2015-01-08T07:11:47+01:00</td>
+<td>2015-01-08T07:26:47+01:00</td>
+<td>Influenza, seasonal, injectable, preservative ...</td>
+<td>140</td>
+<td>CVX</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>fca8d2ca-7aef-2c27-3bba-3f94723012f5</td>
+<td>999-24-8599</td>
+<td>None</td>
+<td>Marlen929</td>
+<td>Greenholt190</td>
+<td>2016-04-01</td>
+<td>410620009</td>
+<td>SNOMED</td>
+<td>3f12ebb4-e03c-3453-88d2-4fc9682383df</td>
+<td>NEW BEDFORD INTERNAL MEDICINE &amp; GERIATRICS, LLC</td>
+<td>Dr. Homero668 Rolón954</td>
+<td>9999962894</td>
+<td>Well child visit (procedure)</td>
+<td>2016-04-01T04:09:48+02:00</td>
+<td>2016-04-01T04:24:48+02:00</td>
+<td>Hep B, adolescent or pediatric</td>
+<td>08</td>
+<td>CVX</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>19936964-a432-d501-2cd5-fa52db6b9f41</td>
+<td>999-33-7974</td>
+<td>None</td>
+<td>Monique148</td>
+<td>Haley279</td>
+<td>2022-01-07</td>
+<td>410620009</td>
+<td>SNOMED</td>
+<td>c6b019eb-28ec-36f6-abf3-bcc4d1d58966</td>
+<td>DUTTON FAMILY CARE ASSOCIATES LLP</td>
+<td>Dr. Maren639 Aufderhar910</td>
+<td>9999950790</td>
+<td>Well child visit (procedure)</td>
+<td>2022-01-07T02:19:02+01:00</td>
+<td>2022-01-07T02:34:02+01:00</td>
+<td>Hep B, adolescent or pediatric</td>
+<td>08</td>
+<td>CVX</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>0d016955-26db-966c-3d52-26d441bfcb97</td>
+<td>999-47-8500</td>
+<td>Ms.</td>
+<td>Tracy345</td>
+<td>Smith67</td>
+<td>2000-07-17</td>
+<td>410620009</td>
+<td>SNOMED</td>
+<td>39c15c0f-5c49-311e-99d2-1fb99d80e06e</td>
+<td>HARBOR HEALTH SERVICES INC</td>
+<td>Dr. Salvador46 Homenick806</td>
+<td>9999977496</td>
+<td>Well child visit (procedure)</td>
+<td>2014-08-18T14:52:06+02:00</td>
+<td>2014-08-18T15:07:06+02:00</td>
+<td>Influenza, seasonal, injectable, preservative ...</td>
+<td>140</td>
+<td>CVX</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="export-the-outcome-in-a-separate-duckdb-file" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="export-the-outcome-in-a-separate-duckdb-file">Export the outcome in a separate duckdb file</h3>
+<p>As the database now becomes big in size, we extract the patient_timeline and pricelist into another duckdb. This decreases the size from 20.5MB to 2.9MB.</p>
+<div class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first extract tables into a dataframe</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>price_list <span class="op">=</span> connection_bronze.sql(<span class="st">'Select * from silver.price_list'</span>).to_df()</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>timeline <span class="op">=</span> connection_bronze.sql(<span class="st">'Select * from silver.patient_timeline'</span>).to_df()</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="co"># load from dataframe into SILVER database</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>connection_silver.sql(<span class="st">'create or replace table price_list as select * from price_list'</span>)</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>connection_silver.sql(<span class="st">'create or replace table patient_timeline as select * from timeline'</span>)</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>connection_silver.sql(<span class="st">'Select * from patient_timeline limit 5'</span>).to_df()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">patient_id</th>
+<th data-quarto-table-cell-role="th">social_security_number</th>
+<th data-quarto-table-cell-role="th">prefix</th>
+<th data-quarto-table-cell-role="th">first_name</th>
+<th data-quarto-table-cell-role="th">last_name</th>
+<th data-quarto-table-cell-role="th">birthDate</th>
+<th data-quarto-table-cell-role="th">code</th>
+<th data-quarto-table-cell-role="th">system</th>
+<th data-quarto-table-cell-role="th">organization_id</th>
+<th data-quarto-table-cell-role="th">organization_name</th>
+<th data-quarto-table-cell-role="th">practitioner_name</th>
+<th data-quarto-table-cell-role="th">practitioner_id</th>
+<th data-quarto-table-cell-role="th">procedure_name</th>
+<th data-quarto-table-cell-role="th">start_time</th>
+<th data-quarto-table-cell-role="th">end_time</th>
+<th data-quarto-table-cell-role="th">Vaccine_name</th>
+<th data-quarto-table-cell-role="th">vaccine_code</th>
+<th data-quarto-table-cell-role="th">vaccine_code_system</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>4fc244f3-2c0e-4017-d64d-c2c4cd03655f</td>
+<td>999-53-5813</td>
+<td>Mrs.</td>
+<td>Alyce744</td>
+<td>Bergstrom287</td>
+<td>1965-01-07</td>
+<td>162673000</td>
+<td>SNOMED</td>
+<td>b03b624d-c939-3688-986d-9555b8009a3b</td>
+<td>HOLYOKE HEALTH CENTER INC</td>
+<td>Dr. Bennett146 Hartmann983</td>
+<td>9999981894</td>
+<td>General examination of patient (procedure)</td>
+<td>2015-01-08T07:11:47+01:00</td>
+<td>2015-01-08T07:26:47+01:00</td>
+<td>zoster vaccine, live</td>
+<td>121</td>
+<td>CVX</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>4fc244f3-2c0e-4017-d64d-c2c4cd03655f</td>
+<td>999-53-5813</td>
+<td>Mrs.</td>
+<td>Alyce744</td>
+<td>Bergstrom287</td>
+<td>1965-01-07</td>
+<td>162673000</td>
+<td>SNOMED</td>
+<td>b03b624d-c939-3688-986d-9555b8009a3b</td>
+<td>HOLYOKE HEALTH CENTER INC</td>
+<td>Dr. Bennett146 Hartmann983</td>
+<td>9999981894</td>
+<td>General examination of patient (procedure)</td>
+<td>2015-01-08T07:11:47+01:00</td>
+<td>2015-01-08T07:26:47+01:00</td>
+<td>Influenza, seasonal, injectable, preservative ...</td>
+<td>140</td>
+<td>CVX</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>fca8d2ca-7aef-2c27-3bba-3f94723012f5</td>
+<td>999-24-8599</td>
+<td>None</td>
+<td>Marlen929</td>
+<td>Greenholt190</td>
+<td>2016-04-01</td>
+<td>410620009</td>
+<td>SNOMED</td>
+<td>3f12ebb4-e03c-3453-88d2-4fc9682383df</td>
+<td>NEW BEDFORD INTERNAL MEDICINE &amp; GERIATRICS, LLC</td>
+<td>Dr. Homero668 Rolón954</td>
+<td>9999962894</td>
+<td>Well child visit (procedure)</td>
+<td>2016-04-01T04:09:48+02:00</td>
+<td>2016-04-01T04:24:48+02:00</td>
+<td>Hep B, adolescent or pediatric</td>
+<td>08</td>
+<td>CVX</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>19936964-a432-d501-2cd5-fa52db6b9f41</td>
+<td>999-33-7974</td>
+<td>None</td>
+<td>Monique148</td>
+<td>Haley279</td>
+<td>2022-01-07</td>
+<td>410620009</td>
+<td>SNOMED</td>
+<td>c6b019eb-28ec-36f6-abf3-bcc4d1d58966</td>
+<td>DUTTON FAMILY CARE ASSOCIATES LLP</td>
+<td>Dr. Maren639 Aufderhar910</td>
+<td>9999950790</td>
+<td>Well child visit (procedure)</td>
+<td>2022-01-07T02:19:02+01:00</td>
+<td>2022-01-07T02:34:02+01:00</td>
+<td>Hep B, adolescent or pediatric</td>
+<td>08</td>
+<td>CVX</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>0d016955-26db-966c-3d52-26d441bfcb97</td>
+<td>999-47-8500</td>
+<td>Ms.</td>
+<td>Tracy345</td>
+<td>Smith67</td>
+<td>2000-07-17</td>
+<td>410620009</td>
+<td>SNOMED</td>
+<td>39c15c0f-5c49-311e-99d2-1fb99d80e06e</td>
+<td>HARBOR HEALTH SERVICES INC</td>
+<td>Dr. Salvador46 Homenick806</td>
+<td>9999977496</td>
+<td>Well child visit (procedure)</td>
+<td>2014-08-18T14:52:06+02:00</td>
+<td>2014-08-18T15:07:06+02:00</td>
+<td>Influenza, seasonal, injectable, preservative ...</td>
+<td>140</td>
+<td>CVX</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="export-results-in-parquet-files" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="export-results-in-parquet-files">Export results in parquet files</h3>
+<p>Again to minimize storage space, we convert the duckdb file to parquet files. The size decreases from 2.9 MB to 550kB.</p>
+<div class="cell" data-execution_count="14">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Export database to parquet files</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>connection_silver.sql(<span class="ss">f"EXPORT DATABASE '</span><span class="sc">{</span>SILVER<span class="sc">}</span><span class="ss">/parquet_export' (FORMAT PARQUET);"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="close-the-database-connection" class="level3">
+<h3 class="anchored" data-anchor-id="close-the-database-connection">Close the database connection</h3>
+<p>When you finish your analysis always make sure to close the duckdb connection. You can only have one duckdb connection at a time.</p>
+<div class="cell" data-execution_count="15">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>connection_silver.close()</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>connection_bronze.close()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="sql-on-fhir" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="sql-on-fhir"><span class="header-section-number">1</span> SQL on FHIR</h2>
+<p><strong>TODO</strong> In this document we created our own standardized tables: the patient_timeline and the pricelist table.</p>
+<p><a href="https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/index.html">SQL on FHIR</a> is a project that deals with handling fhir resources in SQL exosystems that do not accept the nested FHIR structures. In this project rules are set up and guidelines are given as to how to flatten the fhir resources into tabular views. In this project a <a href="https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/columnar_schema_guidance.html">Columnar Schema Guidance</a> is written.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script type="application/vnd.jupyter.widget-state+json">
+{"state":{"0197fb0e68354859b06d744594978913":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"StyleView","bar_color":"black","description_width":""}},"262d20ebd4dc4ce7b4bae3b7d3322dd4":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"ProgressView","bar_style":"","description":"","description_allow_html":false,"layout":"IPY_MODEL_e713dbac2e6443fbabb8aff9c8aefba9","max":100,"min":0,"orientation":"horizontal","style":"IPY_MODEL_0197fb0e68354859b06d744594978913","tabbable":null,"tooltip":null,"value":100}},"e713dbac2e6443fbabb8aff9c8aefba9":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":"auto"}}},"version_major":2,"version_minor":0}
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../src/synthea.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Synthea synthetic patient data</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../src/data-wrangling-libraries.html" class="pagination-link">
+        <span class="nav-page-text">Datawrangling</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">© PharmAccess Foundation, 2023.</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      &nbsp;
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
