@@ -39,12 +39,11 @@ jobs:
 
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
-
+        
       - name: get conda info
-          #  shell: bash -l {0}
-          run: |
-            conda info
-            quarto check jupyter
+        run: |
+          conda info
+          quarto check jupyter
 
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
