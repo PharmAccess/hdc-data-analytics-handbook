@@ -31,7 +31,8 @@ jobs:
       #     conda env create -f analytics_handbook_env.yml 
       #     conda activate HDC-handbook-r-python	
           
-  
+      - name: get conda info
+        run: conda info
       # - name: activate conda env
       #   run: conda activate HDC-handbook-r-python	
 
