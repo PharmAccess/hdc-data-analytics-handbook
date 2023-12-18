@@ -35,7 +35,7 @@ jobs:
         run: |
           conda info
           ls /usr/share/miniconda/envs/
-          ls /home/runner/.conda/envs
+          
       - name: activate conda env
         run: source activate /usr/share/miniconda/envs/HDC-handbook-r-python	
 
