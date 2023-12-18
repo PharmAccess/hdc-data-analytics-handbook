@@ -20,9 +20,9 @@ jobs:
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
-          conda-channels: anaconda, conda-forge
-          auto-activate-base: false
-          activate-environment: HDC-handbook-r-python
+          # conda-channels: anaconda, conda-forge
+          # auto-activate-base: false
+          # activate-environment: HDC-handbook-r-python
           environment-file: analytics_handbook_env.yml
       # - name: Set up Conda
       #   uses: s-weigand/setup-conda@v1
@@ -32,8 +32,8 @@ jobs:
       #     conda activate HDC-handbook-r-python	
           
   
-      - name: activate conda env
-        run: conda activate HDC-handbook-r-python	
+      # - name: activate conda env
+      #   run: conda activate HDC-handbook-r-python	
 
       - name: Render and Publish
         uses: quarto-dev/quarto-actions/publish@v2
