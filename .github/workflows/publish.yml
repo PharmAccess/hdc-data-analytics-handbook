@@ -1,32 +1,46 @@
 on:
   workflow_dispatch:
   push:
-    branches: test_
+    branches: main
 
 name: Quarto Publish
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
     permissions:
       contents: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
 
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: HDC-handbook-r-python
+          environment-file: analytics_handbook_env.yml
+    
+
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
-      - name: Set up Conda
-        uses: s-weigand/setup-conda@v1
-        with:
-          conda-channels: anaconda, conda-forge
-      - run: conda env create -f analytics_handbook_env.yml
-      - run: conda activate HDC-handbook-r-python
+      - name: Show GitHub context   
+        env: 
+          GITHUB_CONTEXT: ${{ toJson(github) }}   
+        run: echo "$GITHUB_CONTEXT"
+     
 
-      - name: Render and Publish
-        uses: quarto-dev/quarto-actions/publish@v2
-        with:
-          target: gh-pages
+      - name: get conda info
+        run: |
+          conda info
+          git config --global user.name "$GITHUB_USER_NAME"
+          quarto check jupyter
+          quarto publish gh-pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_USER_NAME: ${{ github.actor }}
+
+        
