@@ -1,5 +1,5 @@
 # Create views using DuckDB
-The synthea generator generates fhir data in json format. The fhir data has a nested structure which can be challenging for analysis. For that reason we create a flattened view based on the different fhir resources, that can be used for further analysis. In this handbook we create a patient_timeline, including all procedures that a woman had in her pregnancy journey.
+The synthea generator generates FHIR data in json format. The FHIR data has a nested structure which can be challenging for analysis. For that reason we create a flattened view based on the different FHIR resources, that can be used for further analysis. In this handbook we create a patient_timeline, including all procedures that a woman had in her pregnancy journey.
 
 ## What is duckDB?  {.unnumbered}
 DuckDB is an open-source database known for its fast query processing. It supports SQl and nested datastructures like Fhir.
@@ -15,7 +15,7 @@ from pathlib import Path
 
 Now we can import the fhir data in duckdb as follows:
 
-To use DuckDB, we first need to create a connection to a database. To do so we need to give a parameter that refers to a database (duckdb) file. If the file already exists,, duckdb connects to that file, if not a new file will be generated and connected to. The file extension can be anything, but usually .db or .duckdb are used. 
+To use DuckDB, we first need to create a connection to a database. To do so we need to give a parameter that refers to a database (duckdb) file. If the file already exists, duckdb connects to that file, if not a new file will be generated and connected to. The file extension can be anything, but usually .db or .duckdb are used. 
 
 **side note:** when working with schemas a duckdb file can become large rapidly. For that reason in this notebook two duckdb files were created: one in which all raw data and manipulations are stored and has multiple schemas and one in which only the outcome is stored, which will be much smaller in size.
 
@@ -27,10 +27,6 @@ To use DuckDB, we first need to create a connection to a database. To do so we n
 # https://www.databricks.com/glossary/medallion-architecture#:~:text=A%20medallion%20architecture%20is%20a,Silver%20%E2%87%92%20Gold%20layer%20tables).
 
 # define where data is stored
-
-# ROOT = Path(__file__).resolve().parent
-# ROOT = quarto.project.root
-
 
 ROOT = Path('.')
 if 'src' in str(ROOT.resolve()): # locally
@@ -55,7 +51,7 @@ for schema in schema_list:
     connection_bronze.sql(f'create schema if not exists {schema}')
 ```
 
-Now, we import the fhir data from the ndjson fhir resources into the duckdb database. DuckDB allows you to directly read the data from the ndjson files.
+Now, we import the FHIR data from the ndjson FHIR resources into the DuckDB database. DuckDB allows you to directly read the data from the ndjson files.
 
 ```{python}
 schema = 'bronze'
@@ -96,7 +92,7 @@ for resource in resource_list:
     connection_bronze.sql(f"COPY bronze.{resource} TO '{BRONZE}/parquet/{resource}.parquet' (FORMAT PARQUET)")
 ```
 
-It is also possible to do a database export in parquet format. a load.sql and schema.sql file are then also available, to make it easy to import the data at once in duckdb. 
+It is also possible to do a database export in parquet format. a load.sql and schema.sql file are then also available, to make it easy to import the data at once in DuckDB. 
 
 ```{python}
 connection_bronze.sql(f"EXPORT DATABASE '{BRONZE}/parquet_export' (FORMAT PARQUET);")
@@ -106,19 +102,19 @@ It can be observed that the size of the parquet files (16.5 MB) is smaller than 
 
 ### Investigating Nested structures {.unnumbered}
 
-Fhir data has a nested structure. This can be observed by looking at the Claim data as an example:
+FHIR data has a nested structure. This can be observed by looking at the Claim data as an example:
 
 ```{python}
 connection_bronze.sql('select * from bronze.Claim limit 1').to_df()
 ```
 
-Let's obsere the data in item
+Let's observe the data in the item column
 
 ```{python}
 connection_bronze.sql('select * from bronze.Claim limit 1').to_df()['item'][0]
 ```
 
-It can be observed that an item is a list of procedures/products with a price. Within one list item under the productOrService, we can find another list in which the coding is specified. 
+It can be observed that an item is a list of procedures/products with a price.  Within each list item under the productOrService, we can find another list in which the coding is specified. 
 
 To deal with this nested structure, the unnest() and struct_extract() functions are frequently used. 
 
@@ -260,7 +256,7 @@ connection_bronze.sql(query).to_df()
 ```
 
 ### Export the outcome in a separate duckdb file {.unnumbered}
-As the database now becomes big in size, we extract the patient_timeline and pricelist into another duckdb.
+As the database has grown in size, we have extracted the "patient_timeline" and "pricelist" into another DuckDB instance. 
 This decreases the size from 20.5MB to 2.9MB. 
 
 ```{python}
@@ -298,8 +294,8 @@ connection_bronze.close()
 
 
 
-## SQL on FHIR
+## SQL on FHIR {.unnumbered}
 **TODO**
 In this document we created our own standardized tables: the patient_timeline and the pricelist table. 
 
-[SQL on FHIR](https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/index.html) is a project that deals with handling fhir resources in SQL exosystems that do not accept the nested FHIR structures. In this project rules are set up and guidelines are given as to how to flatten the fhir resources into tabular views. In this project a [Columnar Schema Guidance](https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/columnar_schema_guidance.html) is written.
+[SQL on FHIR](https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/index.html) is a project that deals with handling FHIR resources in SQL ecosystems that do not accept the nested FHIR structures. In this project, rules are set up and guidelines are given on how to flatten the FHIR resources into tabular views. In addition a [Columnar Schema Guidance](https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/columnar_schema_guidance.html) is written.

@@ -1,13 +1,13 @@
 # Datawrangling
 In data analysis, we often repeat similar actions to get valuable information from the data. In this Chapter we describe the most common techniques applied in data analysis, and how they are performed in different programming languages and libraries.
 
-## Split-apply-combine
+## Split-apply-combine {.unnumbered}
 Many data analysis problems involve the application of a split-apply-combine strategy,
 where you break up a big problem into manageable pieces, operate on each piece independently and then put all the pieces back together. group_by is the  most common function name for split-apply-combine technique.
 
 These actions can be performed using different libraries in various programming languages. Based on the sample data created with the [Synthea patient generator](synthea.qmd) and [Create views using DuckDB](duckdb.qmd), we will demonstrate standard data analysis actions. We will illustrate how to implement these actions across multiple libraries and languages.
 
-## Datawrangling languages and libraries
+## Datawrangling languages and libraries {.unnumbered}
 In this chapter we use the following languages and libraries:
 
 **Pandas 2.0**  
@@ -28,8 +28,8 @@ In this chapter we use the following languages and libraries:
 **SQL - DuckDB**  
 In this handbook, we use DuckDB to demonstrate how to perform data wrangling with SQL. DuckDB SQL is almost the same as plain SQL but has a couple of extra functions to handle nested data, along with a few functions that aid in data analysis. [DuckDB](https://duckdb.org/) is a fast and efficient open-source database for analyzing large datasets using SQL. 
 
-## Overview data transformations in different libraries
-In the table below, you can find an overview of techniques that are often used in data analysis and the corresponding functions for them in the discussed libraries/languages.
+## Overview data transformations in different libraries {.unnumbered}
+In the table below, you can find an overview of techniques that are frequently employed in data analysis, along with the corresponding functions for these techniques in the discussed libraries/languages.
 
 | concept | pandas | Polars | IBIS | PySpark | dplyr | SQL |
 | --- | --- | ---| --- | --- | --- | --- |
@@ -43,7 +43,7 @@ In the table below, you can find an overview of techniques that are often used i
 
 
 
-## Example using the Synthea dataset
+## Example using the Synthea dataset {.unnumbered}
 To demonstrate the most common data analysis techniques in the different languages and libraries, we use the data generated with the [Synthea Patient Generator](synthea.qmd).
 
 ### load required libraries
@@ -165,7 +165,8 @@ df_price_list_polars = pl.read_parquet(f"{SILVER}/parquet_export/price_list.parq
 
 ## SQL
 
-In [Creating views using DuckDB](duckdb.qmd), we already showed how to create a DuckDB database and read in parquet data in duckdb. Therefore we will connect here to the already created database with soley the patient_timeline and price_list table available.
+In [Creating views using DuckDB](duckdb.qmd),  we have already demonstrated how to create a DuckDB database and import Parquet data into DuckDB. Therefore, here we will connect to the previously created database, which only contains the "patient_timeline" and "price_list" tables.
+
 ```{python}
 # connect to the database
 con_duckdb = duckdb.connect()
@@ -707,11 +708,11 @@ kable(head(df_renamed))
 
 
 ### Join
-It’s rare that a data analysis involves only a single data frame. Typically you have many data frames, and you must join them together to answer the questions that you’re interested in.
+It’s rare that data analysis involves only a single data frame. Typically you have many data frames, and you must join them together to answer the questions that you’re interested in.
 
 An inner join keeps observations that appear in both tables. 
 
-![inner join](images/join-inner.png){#inner-join}
+![Inner join](images/join-inner.png){#inner-join}
 
 An outer join keeps observations that appear in at least one of the tables. There are three types of outer joins:
 
@@ -719,7 +720,7 @@ An outer join keeps observations that appear in at least one of the tables. Ther
 * A right join keeps all observations in y.
 * A full join keeps all observations in x and y.
 
-![outer join](images/join-outer.png){#outer-join}
+![Outer joins](images/join-outer.png){#outer-join}
 
 The most commonly used join is the left join: you use this whenever you look up additional data from another table, because it preserves the original observations even when there isn’t a match. The left join should be your default join: use it unless you have a strong reason to prefer one of the others.
 

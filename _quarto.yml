@@ -27,7 +27,6 @@ website:
     contents:
       - href: src/index.qmd
         text: Home
-      - src/about.qmd
       - src/synthea.qmd
       - src/duckdb.qmd
       - src/data-wrangling-libraries.qmd

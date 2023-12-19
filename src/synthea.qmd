@@ -1,7 +1,7 @@
-# Synthea synthetic patient data
-The examples in this hand book are based on a synthetic patient dataset that was generated using the [synthea patient generator](https://github.com/synthetichealth/synthea). With this generator, it is possible to generate a patient population and associated health records in fhir format for a specific group op patients. For this handbook, we generated a dataset that includes mothers and the health records for their pregnancy journey.
+# Synthea synthetic patient data {.unnumbered}
+The examples in this hand book are based on a synthetic patient dataset that was generated using the [synthea patient generator](https://github.com/synthetichealth/synthea). With this generator, it is possible to generate a patient population and associated health records in FHIR format for a specific group op patients. For this handbook, we generated a dataset that includes mothers and the health records for their pregnancy journey.
 
-## Synthea Set Up
+## Synthea Set Up {.unnumbered}
 1. **Download Java 11 or newer**  
 The synthea patient generator requires Java JDK 11 or newer, which can be downloaded [here](https://www.oracle.com/nl/java/technologies/javase/jdk11-archive-downloads.html).
 
@@ -9,8 +9,9 @@ The synthea patient generator requires Java JDK 11 or newer, which can be downlo
 Download the [synthea jar file](https://github.com/synthetichealth/synthea/releases/download/master-branch-latest/synthea-with-dependencies.jar) and place it in a local directory. 
 
 3. **Change properties**  
-The synthea generator has many properties, which are described in the [common-configuration](https://github.com/synthetichealth/synthea/wiki/Common-Configuration). Some examples are the fhir version to export, whether you want to export in bulk format, and which resources to include or exclude in the export.
+The synthea generator has many properties, which are described in the [common-configuration](https://github.com/synthetichealth/synthea/wiki/Common-Configuration). Some examples are the FHIR version to export, whether you want to export in bulk format, and which resources to include or exclude in the export.
 In the same folder where you placed the synthea jar file, also add a file called 'synthea.properties'. In this file you can add the properties that you want to be different from the [standard settings](https://github.com/synthetichealth/synthea/blob/master/src/main/resources/synthea.properties). In this example we canged only two properties:  
+
 ```{.python}
 #change directory where to output the generated patient data
 exporter.baseDirectory = './data/synthea/'
@@ -18,9 +19,7 @@ exporter.baseDirectory = './data/synthea/'
 exported.fhir.bulk_data = TRUE 
 ```
 
-**TODO:** Why do we choose bulk_data format??
-
-## Usage
+## Usage {.unnumbered}
 Now the synthea patient generator is ready for  use, one can create the desired dataset by adjusting the properties and options. The synthea generator has a number of build in modules that simulate certain conditions, amongst which pregnancy. These modules can be selected by adding the option ```-m [module name]```, when you run the generator. A list with all modules can be found [here](https://github.com/synthetichealth/synthea/wiki/Module-Gallery).
 
 The standard options for running the patient generator are described [here](https://github.com/synthetichealth/synthea/wiki/Basic-Setup-and-Running).
