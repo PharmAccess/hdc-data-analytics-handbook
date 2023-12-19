@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
   push:
-    branches: handbook_new_structure
+    branches: main
 
 name: Quarto Publish
 
