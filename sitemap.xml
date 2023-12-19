@@ -2,22 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://github.com/PharmAccess/hdc-data-analytics-handbook/src/synthea.html</loc>
-    <lastmod>2023-12-18T15:22:30.121Z</lastmod>
+    <lastmod>2023-12-19T09:25:45.414Z</lastmod>
   </url>
   <url>
     <loc>https://github.com/PharmAccess/hdc-data-analytics-handbook/src/index.html</loc>
-    <lastmod>2023-12-18T15:22:05.413Z</lastmod>
-  </url>
-  <url>
-    <loc>https://github.com/PharmAccess/hdc-data-analytics-handbook/src/about.html</loc>
-    <lastmod>2023-12-18T15:21:30.849Z</lastmod>
+    <lastmod>2023-12-19T09:25:21.158Z</lastmod>
   </url>
   <url>
     <loc>https://github.com/PharmAccess/hdc-data-analytics-handbook/src/duckdb.html</loc>
-    <lastmod>2023-12-18T15:22:04.897Z</lastmod>
+    <lastmod>2023-12-19T09:25:20.662Z</lastmod>
   </url>
   <url>
     <loc>https://github.com/PharmAccess/hdc-data-analytics-handbook/src/data-wrangling-libraries.html</loc>
-    <lastmod>2023-12-18T15:22:29.749Z</lastmod>
+    <lastmod>2023-12-19T09:25:45.034Z</lastmod>
   </url>
 </urlset>

@@ -148,12 +148,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../src/about.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">About</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../src/synthea.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Synthea synthetic patient data</span></a>
   </div>
@@ -192,7 +186,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#export-results-in-parquet-files" id="toc-export-results-in-parquet-files" class="nav-link" data-scroll-target="#export-results-in-parquet-files">Export results in parquet files</a></li>
   <li><a href="#close-the-database-connection" id="toc-close-the-database-connection" class="nav-link" data-scroll-target="#close-the-database-connection">Close the database connection</a></li>
   </ul></li>
-  <li><a href="#sql-on-fhir" id="toc-sql-on-fhir" class="nav-link" data-scroll-target="#sql-on-fhir"><span class="header-section-number">1</span> SQL on FHIR</a></li>
+  <li><a href="#sql-on-fhir" id="toc-sql-on-fhir" class="nav-link" data-scroll-target="#sql-on-fhir">SQL on FHIR</a></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/PharmAccess/hdc-data-analytics-handbook/edit/main/src/duckdb.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/PharmAccess/hdc-data-analytics-handbook/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
     </div>
@@ -216,7 +210,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </header>
 
-<p>The synthea generator generates fhir data in json format. The fhir data has a nested structure which can be challenging for analysis. For that reason we create a flattened view based on the different fhir resources, that can be used for further analysis. In this handbook we create a patient_timeline, including all procedures that a woman had in her pregnancy journey.</p>
+<p>The synthea generator generates FHIR data in json format. The FHIR data has a nested structure which can be challenging for analysis. For that reason we create a flattened view based on the different FHIR resources, that can be used for further analysis. In this handbook we create a patient_timeline, including all procedures that a woman had in her pregnancy journey.</p>
 <section id="what-is-duckdb" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="what-is-duckdb">What is duckDB?</h2>
 <p>DuckDB is an open-source database known for its fast query processing. It supports SQl and nested datastructures like Fhir.</p>
@@ -230,7 +224,7 @@ Then import the library:</p>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Now we can import the fhir data in duckdb as follows:</p>
-<p>To use DuckDB, we first need to create a connection to a database. To do so we need to give a parameter that refers to a database (duckdb) file. If the file already exists,, duckdb connects to that file, if not a new file will be generated and connected to. The file extension can be anything, but usually .db or .duckdb are used.</p>
+<p>To use DuckDB, we first need to create a connection to a database. To do so we need to give a parameter that refers to a database (duckdb) file. If the file already exists, duckdb connects to that file, if not a new file will be generated and connected to. The file extension can be anything, but usually .db or .duckdb are used.</p>
 <p><strong>side note:</strong> when working with schemas a duckdb file can become large rapidly. For that reason in this notebook two duckdb files were created: one in which all raw data and manipulations are stored and has multiple schemas and one in which only the outcome is stored, which will be much smaller in size.</p>
 <section id="creating-and-connecting-to-duckdb-databases" class="level3">
 <h3 class="anchored" data-anchor-id="creating-and-connecting-to-duckdb-databases">Creating and connecting to duckdb databases</h3>
@@ -240,19 +234,15 @@ Then import the library:</p>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># define where data is stored</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ROOT = Path(__file__).resolve().parent</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ROOT = quarto.project.root</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>ROOT <span class="op">=</span> Path(<span class="st">'.'</span>)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">'src'</span> <span class="kw">in</span> <span class="bu">str</span>(ROOT.resolve()): <span class="co"># locally</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    ROOT <span class="op">=</span> <span class="st">'..'</span> <span class="op">/</span> ROOT <span class="co"># go one folder up</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>BRONZE <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">'data'</span> <span class="op">/</span> <span class="st">'bronze'</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>SILVER <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">'data'</span> <span class="op">/</span> <span class="st">'silver'</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>SYNTHEA_DUMP <span class="op">=</span> ROOT <span class="op">/</span><span class="st">'data'</span><span class="op">/</span><span class="st">'bronze'</span><span class="op">/</span><span class="st">'synthea'</span><span class="op">/</span><span class="st">'fhir'</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>connection_bronze <span class="op">=</span> duckdb.<span class="ex">connect</span>(<span class="ss">f"</span><span class="sc">{</span>BRONZE<span class="sc">}</span><span class="ss">/raw.duckdb"</span>)</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>connection_silver <span class="op">=</span> duckdb.<span class="ex">connect</span>(<span class="ss">f"</span><span class="sc">{</span>SILVER<span class="sc">}</span><span class="ss">/pregnancy.duckdb"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>ROOT <span class="op">=</span> Path(<span class="st">'.'</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="st">'src'</span> <span class="kw">in</span> <span class="bu">str</span>(ROOT.resolve()): <span class="co"># locally</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    ROOT <span class="op">=</span> <span class="st">'..'</span> <span class="op">/</span> ROOT <span class="co"># go one folder up</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>BRONZE <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">'data'</span> <span class="op">/</span> <span class="st">'bronze'</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>SILVER <span class="op">=</span> ROOT <span class="op">/</span> <span class="st">'data'</span> <span class="op">/</span> <span class="st">'silver'</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>SYNTHEA_DUMP <span class="op">=</span> ROOT <span class="op">/</span><span class="st">'data'</span><span class="op">/</span><span class="st">'bronze'</span><span class="op">/</span><span class="st">'synthea'</span><span class="op">/</span><span class="st">'fhir'</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>connection_bronze <span class="op">=</span> duckdb.<span class="ex">connect</span>(<span class="ss">f"</span><span class="sc">{</span>BRONZE<span class="sc">}</span><span class="ss">/raw.duckdb"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>connection_silver <span class="op">=</span> duckdb.<span class="ex">connect</span>(<span class="ss">f"</span><span class="sc">{</span>SILVER<span class="sc">}</span><span class="ss">/pregnancy.duckdb"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>we are now connected to our duckdb databases, and can run any SQL commands on them.</p>
 </section>
@@ -264,7 +254,7 @@ Then import the library:</p>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> schema <span class="kw">in</span> schema_list: </span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    connection_bronze.sql(<span class="ss">f'create schema if not exists </span><span class="sc">{</span>schema<span class="sc">}</span><span class="ss">'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>Now, we import the fhir data from the ndjson fhir resources into the duckdb database. DuckDB allows you to directly read the data from the ndjson files.</p>
+<p>Now, we import the FHIR data from the ndjson FHIR resources into the DuckDB database. DuckDB allows you to directly read the data from the ndjson files.</p>
 <div class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>schema <span class="op">=</span> <span class="st">'bronze'</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># loop through the different resources, note that the numbers behind organization, practitioner, location, etc. will be different for each set of generated Synthea data.</span></span>
@@ -305,7 +295,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">0</td>
 <td>raw</td>
 <td>bronze</td>
-<td>DiagnosticReport</td>
+<td>PractitionerRole</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -320,7 +310,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">1</td>
 <td>raw</td>
 <td>bronze</td>
-<td>Claim</td>
+<td>Practitioner</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -335,7 +325,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">2</td>
 <td>raw</td>
 <td>bronze</td>
-<td>Provenance</td>
+<td>Immunization</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -350,7 +340,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">3</td>
 <td>raw</td>
 <td>bronze</td>
-<td>ExplanationOfBenefit</td>
+<td>Location</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -365,7 +355,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">4</td>
 <td>raw</td>
 <td>bronze</td>
-<td>DocumentReference</td>
+<td>Organization</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -380,7 +370,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">5</td>
 <td>raw</td>
 <td>bronze</td>
-<td>Encounter</td>
+<td>Patient</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -395,7 +385,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">6</td>
 <td>raw</td>
 <td>bronze</td>
-<td>Patient</td>
+<td>Encounter</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -410,7 +400,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">7</td>
 <td>raw</td>
 <td>bronze</td>
-<td>Organization</td>
+<td>DocumentReference</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -425,7 +415,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">8</td>
 <td>raw</td>
 <td>bronze</td>
-<td>Location</td>
+<td>ExplanationOfBenefit</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -440,7 +430,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">9</td>
 <td>raw</td>
 <td>bronze</td>
-<td>Immunization</td>
+<td>Provenance</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -455,7 +445,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">10</td>
 <td>raw</td>
 <td>bronze</td>
-<td>Practitioner</td>
+<td>Claim</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -470,7 +460,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">11</td>
 <td>raw</td>
 <td>bronze</td>
-<td>PractitionerRole</td>
+<td>DiagnosticReport</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -485,7 +475,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">12</td>
 <td>raw</td>
 <td>silver</td>
-<td>price_list</td>
+<td>patient_timeline</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -500,7 +490,7 @@ Then import the library:</p>
 <td data-quarto-table-cell-role="th">13</td>
 <td>raw</td>
 <td>silver</td>
-<td>patient_timeline</td>
+<td>price_list</td>
 <td>BASE TABLE</td>
 <td>NaN</td>
 <td>NaN</td>
@@ -556,7 +546,7 @@ storage–compute
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> resource <span class="kw">in</span> resource_list: </span>
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    connection_bronze.sql(<span class="ss">f"COPY bronze.</span><span class="sc">{</span>resource<span class="sc">}</span><span class="ss"> TO '</span><span class="sc">{</span>BRONZE<span class="sc">}</span><span class="ss">/parquet/</span><span class="sc">{</span>resource<span class="sc">}</span><span class="ss">.parquet' (FORMAT PARQUET)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>It is also possible to do a database export in parquet format. a load.sql and schema.sql file are then also available, to make it easy to import the data at once in duckdb.</p>
+<p>It is also possible to do a database export in parquet format. a load.sql and schema.sql file are then also available, to make it easy to import the data at once in DuckDB.</p>
 <div class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(<span class="ss">f"EXPORT DATABASE '</span><span class="sc">{</span>BRONZE<span class="sc">}</span><span class="ss">/parquet_export' (FORMAT PARQUET);"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -564,7 +554,7 @@ storage–compute
 </section>
 <section id="investigating-nested-structures" class="level3 unnumbered">
 <h3 class="unnumbered anchored" data-anchor-id="investigating-nested-structures">Investigating Nested structures</h3>
-<p>Fhir data has a nested structure. This can be observed by looking at the Claim data as an example:</p>
+<p>FHIR data has a nested structure. This can be observed by looking at the Claim data as an example:</p>
 <div class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(<span class="st">'select * from bronze.Claim limit 1'</span>).to_df()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
@@ -617,7 +607,7 @@ storage–compute
 </div>
 </div>
 </div>
-<p>Let’s obsere the data in item</p>
+<p>Let’s observe the data in the item column</p>
 <div class="cell" data-execution_count="9">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(<span class="st">'select * from bronze.Claim limit 1'</span>).to_df()[<span class="st">'item'</span>][<span class="dv">0</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display" data-execution_count="9">
@@ -639,7 +629,7 @@ storage–compute
   'net': {'value': 136.0, 'currency': 'USD'}}]</code></pre>
 </div>
 </div>
-<p>It can be observed that an item is a list of procedures/products with a price. Within one list item under the productOrService, we can find another list in which the coding is specified.</p>
+<p>It can be observed that an item is a list of procedures/products with a price. Within each list item under the productOrService, we can find another list in which the coding is specified.</p>
 <p>To deal with this nested structure, the unnest() and struct_extract() functions are frequently used.</p>
 <p>Let’s try to create a list of the claims where each productOrService of a claim is on a new line. To do so, a cross join can be used to merge the results with the original table.</p>
 <div class="cell" data-execution_count="10">
@@ -901,7 +891,7 @@ storage–compute
 <span id="cb13-87"><a href="#cb13-87" aria-hidden="true" tabindex="-1"></a>connection_bronze.sql(query).to_df()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
 <script type="application/vnd.jupyter.widget-view+json">
-{"model_id":"5fe96d433ca0401894c11f7c42e640fa","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
+{"model_id":"66772647fa1b4708b828f8aa35173bd5","version_major":2,"version_minor":0,"quarto_mimetype":"application/vnd.jupyter.widget-view+json"}
 </script>
 </div>
 <div class="cell-output cell-output-display" data-execution_count="12">
@@ -1047,7 +1037,7 @@ storage–compute
 </section>
 <section id="export-the-outcome-in-a-separate-duckdb-file" class="level3 unnumbered">
 <h3 class="unnumbered anchored" data-anchor-id="export-the-outcome-in-a-separate-duckdb-file">Export the outcome in a separate duckdb file</h3>
-<p>As the database now becomes big in size, we extract the patient_timeline and pricelist into another duckdb. This decreases the size from 20.5MB to 2.9MB.</p>
+<p>As the database has grown in size, we have extracted the “patient_timeline” and “pricelist” into another DuckDB instance. This decreases the size from 20.5MB to 2.9MB.</p>
 <div class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># first extract tables into a dataframe</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>price_list <span class="op">=</span> connection_bronze.sql(<span class="st">'Select * from silver.price_list'</span>).to_df()</span>
@@ -1218,17 +1208,17 @@ storage–compute
 </div>
 </section>
 </section>
-<section id="sql-on-fhir" class="level2" data-number="1">
-<h2 data-number="1" class="anchored" data-anchor-id="sql-on-fhir"><span class="header-section-number">1</span> SQL on FHIR</h2>
+<section id="sql-on-fhir" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="sql-on-fhir">SQL on FHIR</h2>
 <p><strong>TODO</strong> In this document we created our own standardized tables: the patient_timeline and the pricelist table.</p>
-<p><a href="https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/index.html">SQL on FHIR</a> is a project that deals with handling fhir resources in SQL exosystems that do not accept the nested FHIR structures. In this project rules are set up and guidelines are given as to how to flatten the fhir resources into tabular views. In this project a <a href="https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/columnar_schema_guidance.html">Columnar Schema Guidance</a> is written.</p>
+<p><a href="https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/index.html">SQL on FHIR</a> is a project that deals with handling FHIR resources in SQL ecosystems that do not accept the nested FHIR structures. In this project, rules are set up and guidelines are given on how to flatten the FHIR resources into tabular views. In addition a <a href="https://build.fhir.org/ig/FHIR/sql-on-fhir-v2/columnar_schema_guidance.html">Columnar Schema Guidance</a> is written.</p>
 
 
 </section>
 
 </main> <!-- /main -->
 <script type="application/vnd.jupyter.widget-state+json">
-{"state":{"5fe96d433ca0401894c11f7c42e640fa":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"ProgressView","bar_style":"","description":"","description_allow_html":false,"layout":"IPY_MODEL_cc7858b581ae49d1b6ce10ea34d42e64","max":100,"min":0,"orientation":"horizontal","style":"IPY_MODEL_89435b5990b54e3b964cfce9e83b3723","tabbable":null,"tooltip":null,"value":100}},"89435b5990b54e3b964cfce9e83b3723":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"StyleView","bar_color":"black","description_width":""}},"cc7858b581ae49d1b6ce10ea34d42e64":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":"auto"}}},"version_major":2,"version_minor":0}
+{"state":{"66772647fa1b4708b828f8aa35173bd5":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"FloatProgressModel","state":{"_dom_classes":[],"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"FloatProgressModel","_view_count":null,"_view_module":"@jupyter-widgets/controls","_view_module_version":"2.0.0","_view_name":"ProgressView","bar_style":"","description":"","description_allow_html":false,"layout":"IPY_MODEL_c910395a98e84cc39578822496e75140","max":100,"min":0,"orientation":"horizontal","style":"IPY_MODEL_cfa4c688883e419798066f210a06465c","tabbable":null,"tooltip":null,"value":100}},"c910395a98e84cc39578822496e75140":{"model_module":"@jupyter-widgets/base","model_module_version":"2.0.0","model_name":"LayoutModel","state":{"_model_module":"@jupyter-widgets/base","_model_module_version":"2.0.0","_model_name":"LayoutModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"LayoutView","align_content":null,"align_items":null,"align_self":null,"border_bottom":null,"border_left":null,"border_right":null,"border_top":null,"bottom":null,"display":null,"flex":null,"flex_flow":null,"grid_area":null,"grid_auto_columns":null,"grid_auto_flow":null,"grid_auto_rows":null,"grid_column":null,"grid_gap":null,"grid_row":null,"grid_template_areas":null,"grid_template_columns":null,"grid_template_rows":null,"height":null,"justify_content":null,"justify_items":null,"left":null,"margin":null,"max_height":null,"max_width":null,"min_height":null,"min_width":null,"object_fit":null,"object_position":null,"order":null,"overflow":null,"padding":null,"right":null,"top":null,"visibility":null,"width":"auto"}},"cfa4c688883e419798066f210a06465c":{"model_module":"@jupyter-widgets/controls","model_module_version":"2.0.0","model_name":"ProgressStyleModel","state":{"_model_module":"@jupyter-widgets/controls","_model_module_version":"2.0.0","_model_name":"ProgressStyleModel","_view_count":null,"_view_module":"@jupyter-widgets/base","_view_module_version":"2.0.0","_view_name":"StyleView","bar_color":"black","description_width":""}}},"version_major":2,"version_minor":0}
 </script>
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {

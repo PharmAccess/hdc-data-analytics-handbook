@@ -64,7 +64,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../">
 <link href="../src/duckdb.html" rel="next">
-<link href="../src/about.html" rel="prev">
+<link href="../src/index.html" rel="prev">
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -144,12 +144,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../src/about.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">About</span></a>
-  </div>
-</li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../src/synthea.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Synthea synthetic patient data</span></a>
   </div>
@@ -176,10 +170,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#synthea-synthetic-patient-data" id="toc-synthea-synthetic-patient-data" class="nav-link active" data-scroll-target="#synthea-synthetic-patient-data"><span class="header-section-number">1</span> Synthea synthetic patient data</a>
+  <li><a href="#synthea-synthetic-patient-data" id="toc-synthea-synthetic-patient-data" class="nav-link active" data-scroll-target="#synthea-synthetic-patient-data">Synthea synthetic patient data</a>
   <ul class="collapse">
-  <li><a href="#synthea-set-up" id="toc-synthea-set-up" class="nav-link" data-scroll-target="#synthea-set-up"><span class="header-section-number">1.1</span> Synthea Set Up</a></li>
-  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage"><span class="header-section-number">1.2</span> Usage</a></li>
+  <li><a href="#synthea-set-up" id="toc-synthea-set-up" class="nav-link" data-scroll-target="#synthea-set-up">Synthea Set Up</a></li>
+  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/PharmAccess/hdc-data-analytics-handbook/edit/main/src/synthea.qmd" class="toc-action">Edit this page</a></p><p><a href="https://github.com/PharmAccess/hdc-data-analytics-handbook/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
@@ -189,28 +183,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="synthea-synthetic-patient-data" class="level1" data-number="1">
-<h1 data-number="1"><span class="header-section-number">1</span> Synthea synthetic patient data</h1>
-<p>The examples in this hand book are based on a synthetic patient dataset that was generated using the <a href="https://github.com/synthetichealth/synthea">synthea patient generator</a>. With this generator, it is possible to generate a patient population and associated health records in fhir format for a specific group op patients. For this handbook, we generated a dataset that includes mothers and the health records for their pregnancy journey.</p>
-<section id="synthea-set-up" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="synthea-set-up"><span class="header-section-number">1.1</span> Synthea Set Up</h2>
+<section id="synthea-synthetic-patient-data" class="level1 unnumbered">
+<h1 class="unnumbered">Synthea synthetic patient data</h1>
+<p>The examples in this hand book are based on a synthetic patient dataset that was generated using the <a href="https://github.com/synthetichealth/synthea">synthea patient generator</a>. With this generator, it is possible to generate a patient population and associated health records in FHIR format for a specific group op patients. For this handbook, we generated a dataset that includes mothers and the health records for their pregnancy journey.</p>
+<section id="synthea-set-up" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="synthea-set-up">Synthea Set Up</h2>
 <ol type="1">
 <li><p><strong>Download Java 11 or newer</strong><br>
 The synthea patient generator requires Java JDK 11 or newer, which can be downloaded <a href="https://www.oracle.com/nl/java/technologies/javase/jdk11-archive-downloads.html">here</a>.</p></li>
 <li><p><strong>Place synthea generator in local directory</strong><br>
 Download the <a href="https://github.com/synthetichealth/synthea/releases/download/master-branch-latest/synthea-with-dependencies.jar">synthea jar file</a> and place it in a local directory.</p></li>
 <li><p><strong>Change properties</strong><br>
-The synthea generator has many properties, which are described in the <a href="https://github.com/synthetichealth/synthea/wiki/Common-Configuration">common-configuration</a>. Some examples are the fhir version to export, whether you want to export in bulk format, and which resources to include or exclude in the export. In the same folder where you placed the synthea jar file, also add a file called ‘synthea.properties’. In this file you can add the properties that you want to be different from the <a href="https://github.com/synthetichealth/synthea/blob/master/src/main/resources/synthea.properties">standard settings</a>. In this example we canged only two properties:<br>
-</p></li>
+The synthea generator has many properties, which are described in the <a href="https://github.com/synthetichealth/synthea/wiki/Common-Configuration">common-configuration</a>. Some examples are the FHIR version to export, whether you want to export in bulk format, and which resources to include or exclude in the export. In the same folder where you placed the synthea jar file, also add a file called ‘synthea.properties’. In this file you can add the properties that you want to be different from the <a href="https://github.com/synthetichealth/synthea/blob/master/src/main/resources/synthea.properties">standard settings</a>. In this example we canged only two properties:</p></li>
 </ol>
 <div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#change directory where to output the generated patient data</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>exporter.baseDirectory <span class="op">=</span> <span class="st">'./data/synthea/'</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#create a json file per resource instead of per patient</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>exported.fhir.bulk_data <span class="op">=</span> TRUE </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<p><strong>TODO:</strong> Why do we choose bulk_data format??</p>
 </section>
-<section id="usage" class="level2" data-number="1.2">
-<h2 data-number="1.2" class="anchored" data-anchor-id="usage"><span class="header-section-number">1.2</span> Usage</h2>
+<section id="usage" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="usage">Usage</h2>
 <p>Now the synthea patient generator is ready for use, one can create the desired dataset by adjusting the properties and options. The synthea generator has a number of build in modules that simulate certain conditions, amongst which pregnancy. These modules can be selected by adding the option <code>-m [module name]</code>, when you run the generator. A list with all modules can be found <a href="https://github.com/synthetichealth/synthea/wiki/Module-Gallery">here</a>.</p>
 <p>The standard options for running the patient generator are described <a href="https://github.com/synthetichealth/synthea/wiki/Basic-Setup-and-Running">here</a>.</p>
 <p>To run the synthea generator:</p>
@@ -462,8 +454,8 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="../src/about.html" class="pagination-link">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">About</span>
+      <a href="../src/index.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Home</span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
