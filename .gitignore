@@ -1,3 +1,11 @@
 /.quarto/
 /docs/
+.idea/
 .DS_Store
+.vscode
+.Rhistory
+*.Rproj
+.Rproj.user/
+/docs/
+/data/bronze/parquet/*
+development/

@@ -1,6 +1,7 @@
 project:
   type: website
   output-dir: docs
+  execute-dir: project
 
 website:
   title: "Data Analytics Handbook"
@@ -24,13 +25,16 @@ website:
     collapse-level: 1
     pinned: true
     contents:
-      - href: index.qmd
+      - href: src/index.qmd
         text: Home
-      - about.qmd
+      - src/synthea.qmd
+      - src/duckdb.qmd
+      - src/data-wrangling-libraries.qmd
 
 format:
   html:
     theme: flatly
+    code-copy: true
 
 bibliography: pharmaccess.bib
 toc: true
